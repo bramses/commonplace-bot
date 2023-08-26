@@ -21,7 +21,8 @@ const addUser = (interaction, invocations) => {
         invocations[userName].lifetimeInvocations = 0;
         invocations[userName].commandInvocations = {}
         invocations[userName].isMember = false;
-        invocations[userName].monthlyReset = new Date().toISOString().slice(0, 7);
+        invocations[userName].isComped = false;
+        invocations[userName].dayOfSignup = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
     }
 
     return invocations;
@@ -51,16 +52,26 @@ const saveInvocations = (invocations) => {
     fs.writeFileSync('./invocations.json', JSON.stringify(invocations, null, 2));
 }
 
-// if user monthlyReset is today, reset commandInvocations
+// if 28 days have passed since user signup date, reset commandInvocations and reset dayOfSignup to today
 const resetCommandInvocations = (invocations) => {
-    const today = new Date().toISOString().slice(0, 7);
+    const today = new Date().toISOString().slice(0, 10);
+    const dayReset = 28;
     for (const userName in invocations) {
-        if (invocations[userName].monthlyReset === today) {
+        const dayOfSignup = invocations[userName].dayOfSignup;
+        const daysSinceSignup = Math.floor((Date.parse(today) - Date.parse(dayOfSignup)) / 86400000);
+        if (daysSinceSignup >= dayReset) {
             invocations[userName].commandInvocations = {};
+            invocations[userName].dayOfSignup = today;
         }
     }
-
+    
     return invocations;
+}
+
+export const resetCommandInvocationsChoreWorkflow = () => {
+    let invocations = loadInvocations();
+    invocations = resetCommandInvocations(invocations);
+    saveInvocations(invocations);
 }
 
 // load invocations.json
@@ -104,11 +115,18 @@ export const preWorkflow = async (interaction) => {
 }
 
 const checkCommandLimits = async (interaction, invocations) => {
+
+
     const commandLimits = loadCommandLimits();
     const userName = getUserName(interaction);
     const userInvocations = invocations[userName];
     const isMember = userInvocations.isMember;
+    const isComped = userInvocations.isComped;
     const commandName = interaction.commandName;
+
+    if (isComped) {
+        return true;
+    }
 
     if (commandName in commandLimits) {
         const commandLimit = commandLimits[commandName][isMember ? 'member' : 'free'];
