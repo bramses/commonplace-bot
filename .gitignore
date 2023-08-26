@@ -3,3 +3,4 @@ node_modules
 config.json
 invocations.json
 command_limits.json
+books.json
