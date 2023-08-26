@@ -1,6 +1,8 @@
 import OpenAI from "openai";
 import config from '../../config.json' assert { "type": "json" };
 import { SlashCommandBuilder } from 'discord.js';
+import { invocationWorkflow, preWorkflow } from '../../invocation.js';
+
 
 
 const  { OPENAI_API_KEY } = config;
@@ -48,7 +50,15 @@ export const data = new SlashCommandBuilder()
 
 export async function execute(interaction) {
     await interaction.deferReply();
+
+    if (!await preWorkflow(interaction)) {
+        await interaction.editReply('You have reached your monthly limit for this command: ' + interaction.commandName);
+        return;
+    }
+
+
     const userInput = interaction.options.getString('input');
     const { prompt, imageUrl } = await main(userInput);
-    await interaction.editReply(`Art Prompt: ${prompt} \n Image: [(url)](${imageUrl})`);
+    await interaction.editReply(`Art Prompt (save the image it disappears in 24 hours!): ${prompt} \n Image: [(url)](${imageUrl})`);
+    await invocationWorkflow(interaction);
 }

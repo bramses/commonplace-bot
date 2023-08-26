@@ -1,5 +1,6 @@
 import config from '../../config.json' assert { "type": "json" };
 import { SlashCommandBuilder, ChannelType } from 'discord.js';
+import { invocationWorkflow, preWorkflow } from '../../invocation.js';
 
 const { quoordinates_server } = config;
 
@@ -28,8 +29,16 @@ export const data = new SlashCommandBuilder()
 
 export async function execute(interaction) {
     await interaction.deferReply();
+
+    if (!await preWorkflow(interaction)) {
+        await interaction.editReply('You have reached your monthly limit for this command: ' + interaction.commandName);
+        return;
+    }
+
+
     const userInput = interaction.options.getString('input');
     const quoordinate  = await main(userInput);
+
 
     const quotes = quoordinate.map(q => `> ${q.text}\n\n-- ${q.title}\n\n`).filter(q => q.length < 2000);
 
@@ -45,4 +54,5 @@ export async function execute(interaction) {
         await thread.send(quote);
     }
     await interaction.editReply(`Results: ${quoordinate.length} quotes`);
+    await invocationWorkflow(interaction);
 }
