@@ -26,7 +26,7 @@ async function complete(text) {
   return completion.choices[0].message.content;
 }
 
-async function main(prompt) {
+export async function main(prompt) {
   prompt = await complete(prompt);
   prompt = prompt.replace("Art Prompt: ", "").trim();
   const image = await openai.images.generate({ prompt: prompt });
@@ -35,8 +35,7 @@ async function main(prompt) {
   return {
     prompt,
     imageUrl,
-  }
-  
+  }  
 }
 
 export const data = new SlashCommandBuilder()

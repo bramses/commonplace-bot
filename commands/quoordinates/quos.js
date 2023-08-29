@@ -1,5 +1,11 @@
 import config from "../../config.json" assert { "type": "json" };
-import { SlashCommandBuilder, ChannelType } from "discord.js";
+import {
+  SlashCommandBuilder,
+  ChannelType,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+} from "discord.js";
 import { invocationWorkflow, preWorkflow } from "../../invocation.js";
 import { lookupBook } from "../../books.js";
 
@@ -60,8 +66,18 @@ export async function execute(interaction) {
     reason: "Sending quotes as separate messages in one thread",
   });
 
+  const confirm = new ButtonBuilder()
+    .setCustomId("button_id")
+    .setLabel("Make Art")
+    .setStyle(ButtonStyle.Primary);
+
+  const row = new ActionRowBuilder().addComponents(confirm);
+
   for (const quote of quotes) {
-    await thread.send(quote);
+    await thread.send({
+      content: quote,
+      components: [row],
+    });
   }
   await interaction.editReply(`Results: ${quoordinate.length} quotes`);
   await invocationWorkflow(interaction);

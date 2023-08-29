@@ -29,12 +29,22 @@ const addUser = (interaction, invocations) => {
 }
 
 // add invocation to invocations.json
-const addInvocation = (interaction, invocations) => {
+const addInvocation = (interaction, invocations, isButton = false) => {
     const userName = getUserName(interaction);
+    let query = null;
+
+    if (isButton) {
+        // use interaction.message.content as query
+        query = interaction.message.content;
+    } else {
+        // use interaction.options.getString('input') as query
+        query = interaction.options.getString('input') || null;
+    }
+
     invocations[userName].commands.push({
         command: interaction.commandName,
         time: new Date().toISOString(),
-        query: interaction.options.getString('input') || null,
+        query: query,
     });
     if (interaction.commandName in invocations[userName].commandInvocations) {
         invocations[userName].commandInvocations[interaction.commandName] += 1;
@@ -97,9 +107,9 @@ const loadCommandLimits = () => {
 
 
 // main function
-export const invocationWorkflow = async (interaction) => {
+export const invocationWorkflow = async (interaction, isButton = false) => {
     let invocations = loadInvocations();
-    invocations = addInvocation(interaction, invocations);
+    invocations = addInvocation(interaction, invocations, isButton);
     saveInvocations(invocations);
 
     return invocations;
