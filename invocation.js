@@ -4,11 +4,14 @@ import fs from 'node:fs';
 
 // extract user name from interaction
 const getUserName = (interaction) => {
+    let tag = interaction.tag || interaction.user.tag
     if (interaction.member instanceof GuildMember) {
-        return interaction.member.displayName;
+        
+
+        return interaction.user.username + '#' + interaction.member.user.id;
     }
     else {
-        return interaction.user.username;
+        return interaction.user.username + '#' + interaction.user.id;
     }
 }
 
@@ -118,15 +121,12 @@ export const invocationWorkflow = async (interaction, isButton = false) => {
 export const preWorkflow = async (interaction) => {
     let invocations = loadInvocations();
     invocations = addUser(interaction, invocations);
-    // invocations = resetCommandInvocations(invocations);
     saveInvocations(invocations);
 
     return checkCommandLimits(interaction, invocations);
 }
 
 const checkCommandLimits = async (interaction, invocations) => {
-
-
     const commandLimits = loadCommandLimits();
     const userName = getUserName(interaction);
     const userInvocations = invocations[userName];

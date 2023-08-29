@@ -12,7 +12,7 @@ import { lookupBook } from "../../books.js";
 const { quoordinates_server } = config;
 
 // post to quoordinates server with the user's input as the body.query
-async function main(query) {
+export async function quosLogic(query) {
   const response = await fetch(quoordinates_server, {
     method: "POST",
     headers: {
@@ -47,7 +47,7 @@ export async function execute(interaction) {
   }
 
   const userInput = interaction.options.getString("input");
-  const quoordinate = await main(userInput);
+  const quoordinate = await quosLogic(userInput);
 
   const quotes = quoordinate
     .map(
@@ -66,12 +66,17 @@ export async function execute(interaction) {
     reason: "Sending quotes as separate messages in one thread",
   });
 
-  const confirm = new ButtonBuilder()
+  const makeAart = new ButtonBuilder()
     .setCustomId("button_id")
-    .setLabel("Make Art")
+    .setLabel("Make Aart (+1 aart)")
     .setStyle(ButtonStyle.Primary);
 
-  const row = new ActionRowBuilder().addComponents(confirm);
+  const learnMore = new ButtonBuilder()
+    .setCustomId("quos_learn_more")
+    .setLabel("Learn More (+1 quos)")
+    .setStyle(ButtonStyle.Primary);
+
+  const row = new ActionRowBuilder().addComponents(makeAart, learnMore);
 
   for (const quote of quotes) {
     await thread.send({

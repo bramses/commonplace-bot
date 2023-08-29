@@ -1,8 +1,18 @@
 import fs from "node:fs";
 import path from "node:path";
-import { Client, Collection, Events, GatewayIntentBits } from "discord.js";
+import {
+  Client,
+  Collection,
+  Events,
+  GatewayIntentBits,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+} from "discord.js";
 import { main } from "./commands/dalle/aart.js";
-import { invocationWorkflow } from "./invocation.js";
+import { invocationWorkflow, preWorkflow } from "./invocation.js";
+import { quosLogic } from "./commands/quoordinates/quos.js";
+import { lookupBook } from "./books.js";
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 import config from "./config.json" assert { "type": "json" };
@@ -38,25 +48,66 @@ client.on(Events.InteractionCreate, async (interaction) => {
   if (!interaction.isChatInputCommand() && !interaction.isButton()) return;
 
   if (interaction.isButton()) {
-	console.log(interaction);
-	console.log(interaction.customId);
     if (interaction.customId === "button_id") {
-		await interaction.deferReply();
-      console.log(`Button was clicked by: ${interaction.user.username}`);
-      // Here you can call your function
-	  console.log(interaction.message.content);
+      await interaction.deferReply();
+      await preWorkflow(interaction);
       const { prompt, imageUrl } = await main(interaction.message.content);
-	  // console.log(prompt);
 
-	  if (interaction.replied || interaction.deferred) {
-		await interaction.followUp(`Art Prompt (save the image it disappears in 24 hours!): ${prompt} \n Image: [(url)](${imageUrl})`);
-	  } else {
-		await interaction.reply(`Art Prompt (save the image it disappears in 24 hours!): ${prompt} \n Image: [(url)](${imageUrl})`);
-	  }
-	  // set interaction command name to aart
-	  interaction.commandName = "aart";
-	  await invocationWorkflow(interaction, true);
+      if (interaction.replied || interaction.deferred) {
+        await interaction.followUp(
+          `Art Prompt (**save the image it disappears in 24 hours!**): ${prompt} \n Image: [(url)](${imageUrl})`
+        );
+      } else {
+        await interaction.reply(
+          `Art Prompt (**save the image it disappears in 24 hours!**): ${prompt} \n Image: [(url)](${imageUrl})`
+        );
+      }
+      // set interaction command name to aart
+      interaction.commandName = "aart";
+      await invocationWorkflow(interaction, true);
+    } else if (interaction.customId === "quos_learn_more") {
+      await interaction.deferReply();
+      await preWorkflow(interaction);
+      const similarQuos = await quosLogic(interaction.message.content);
+
+      const makeAart = new ButtonBuilder()
+        .setCustomId("button_id")
+        .setLabel("Make Aart (+1 aart)")
+        .setStyle(ButtonStyle.Primary);
+
+      const learnMore = new ButtonBuilder()
+        .setCustomId("quos_learn_more")
+        .setLabel("Learn More (+1 quos)")
+        .setStyle(ButtonStyle.Primary);
+
+      const row = new ActionRowBuilder().addComponents(makeAart, learnMore);
+
+      const quotes = similarQuos
+        .filter((q) => {
+			return !interaction.message.content.includes(q.text)
+		})
+        .map(
+          (q) =>
+            `> ${q.text}\n\n-- ${
+              lookupBook(q.title)
+                ? `[${q.title}](${lookupBook(q.title)})`
+                : q.title
+            }\n\n`
+        )
+        .filter((q) => q.length < 2000);
+      // append quotes to thread
+
+      for (const quote of quotes) {
+        await interaction.followUp({
+          content: quote,
+          components: [row],
+        });
+      }
+
+	  interaction.commandName = "quos";
+      await invocationWorkflow(interaction, true);
     }
+
     return;
   } else {
     const command = client.commands.get(interaction.commandName);
