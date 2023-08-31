@@ -13,7 +13,6 @@ import { main } from "./commands/dalle/aart.js";
 import { invocationWorkflow, preWorkflow } from "./invocation.js";
 import { quosLogic } from "./commands/quoordinates/quos.js";
 import { lookupBook } from "./books.js";
-import { complete } from "./openai_helper.js";
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 import config from "./config.json" assert { "type": "json" };
@@ -49,71 +48,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
   if (!interaction.isChatInputCommand() && !interaction.isButton()) return;
 
   if (interaction.isButton()) {
-    if (interaction.customId === "duel__topic_1_x") {
-      console.log(interaction);
-      await interaction.deferReply();
-      await preWorkflow(interaction);
-      // get topic from button label
-      const topic = interaction.message.components[0].components[0].label;
-      console.log(topic);
-      // await interaction.editReply({
-      // 	content: `You chose ${topic}! ephemeral`,
-      // 	ephemeral: true,
-      // });
-
-      // given topic create two questions from the complete function
-      const questionsRes = await complete(
-        `Create two different short questions (less than 80 characters) about ${topic} that you would ask someone else to get them to talk about it.`
-      );
-
-      // create two buttons with the questions as labels
-      const question1 = questionsRes.split("\n")[0];
-      const question2 = questionsRes.split("\n")[1];
-
-      const message = await interaction.followUp({
-        content: `Which question do you prefer?\n${question1}\n${question2}\nRespond with 1 or 2 emoji.`,
-		fetchReply: true,
-      });
-
-      message.react("1️⃣");
-      message.react("2️⃣");
-
-      const filter = (reaction, user) => {
-        return (
-          ["1️⃣", "2️⃣"].includes(reaction.emoji.name) &&
-          user.id === interaction.user.id
-        );
-      };
-
-	  console.log(message);
-
-      message
-        .awaitReactions({ filter, max: 1, time: 60000, errors: ["time"] })
-        .then((collected) => {
-          const reaction = collected.first();
-
-          if (reaction.emoji.name === "1️⃣") {
-            interaction.followUp("you chose 1");
-          } else {
-            interaction.followUp("you chose 2");
-          }
-
-          interaction.followUp(`you chose ${reaction.emoji.name}`);
-        })
-        .catch((collected) => {
-          interaction.followUp("you did not react with a 1️⃣ or 2️⃣ emoji.");
-        });
-    } else if (interaction.customId === "duel__topic_2_x") {
-      await interaction.deferReply();
-      await preWorkflow(interaction);
-      // get topic from button label
-      const topic = interaction.message.components[0].components[1].label;
-      console.log(topic);
-      await interaction.followUp({
-        content: `You chose ${topic} (ephemeral)!`,
-        ephemeral: true,
-      });
-    } else if (interaction.customId === "button_id") {
+    if (interaction.customId === "button_id") {
       await interaction.deferReply();
       await preWorkflow(interaction);
       const { prompt, imageUrl } = await main(interaction.message.content);
@@ -176,9 +111,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
     return;
   } else {
     const command = client.commands.get(interaction.commandName);
-
-	console.log("called command", command);
-
     if (!command) return;
 
     try {

@@ -11,7 +11,6 @@ import { complete } from "../../openai_helper.js";
 import { quosLogic } from "./quos.js";
 import { lookupBook } from "../../books.js";
 
-
 const duelCommand = new SlashCommandBuilder()
   .setName("duel")
   .setDescription("Find quotes based on your responses to two prompts.");
@@ -49,11 +48,19 @@ export async function execute(interaction) {
       time: 60_000,
     });
 
-    if (confirmation.customId === "duel__topic_1") {
-      // get topic from button label
-      const topic = confirmation.message.components[0].components[0].label;
+    if (
+      confirmation.customId === "duel__topic_1" ||
+      confirmation.customId === "duel__topic_2"
+    ) {
+      let topic = null;
+      if (confirmation.customId === "duel__topic_1") {
+        topic = confirmation.message.components[0].components[0].label;
+      } else  if (confirmation.customId === "duel__topic_2") {
+        topic = confirmation.message.components[0].components[1].label;
+      }
+
       const questionsRes = await complete(
-        `Create two different short questions (less than 80 characters) about ${topic} that you would ask someone else to get them to talk about it.`
+        `Create two different short questions (less than 80 chars) about ${topic} that you would ask someone else to get them to talk about it.`
       );
 
       // create two buttons with the questions as labels
@@ -72,84 +79,88 @@ export async function execute(interaction) {
           .setStyle(ButtonStyle.Primary)
       );
 
+      console.log("waiting for second confirmation as " + confirmation.customId);
       await confirmation.update({
-        content: `Which question do you prefer?\n${question1}\n${question2}\nRespond with 1 or 2 emoji.`,
+        content: `Which question do you prefer?\n${question1}\n${question2}`,
         components: [row],
         ephemeral: true,
       });
 
-      const collectorFilter = (i) => i.user.id === interaction.user.id;
-      try {
-        const confirmation = await response.awaitMessageComponent({
-          filter: collectorFilter,
-          time: 60_000,
-        });
-
-        if (confirmation.customId === "duel__question_1") {
-          // run quosLogic with question1
-            try {
-                await confirmation.deferReply();
-                const quoordinate = await quosLogic(question1);
-                // console.log(quoordinate);
-                const quotes = quoordinate
-                    .map(
-                        (q) =>
-                            `> ${q.text}\n\n-- ${
-                                lookupBook(q.title) ? `[${q.title}](${lookupBook(q.title)})` : q.title
-                            }\n\n`
-                    )
-                    .filter((q) => q.length < 2000);
-    
-                    
-    
-                const thread = await interaction.channel.threads.create({
-                    name: question1,
-                    autoArchiveDuration: 60,
-                    startMessage: interaction.channel.lastMessage,
-                    type: ChannelType.GUILD_PUBLIC_THREAD,
-                    reason: "Sending quotes as separate messages in one thread",
-                });
-    
-                // console.log(thread);
-    
-                const makeAart = new ButtonBuilder()
-                    .setCustomId("button_id")
-                    .setLabel("Make Aart (+1 aart)")
-                    .setStyle(ButtonStyle.Primary);
-    
-                const learnMore = new ButtonBuilder()
-                    .setCustomId("quos_learn_more")
-                    .setLabel("Learn More (+1 quos)")
-                    .setStyle(ButtonStyle.Primary);
-    
-                const row = new ActionRowBuilder().addComponents(makeAart, learnMore);
-    
-                for (const quote of quotes) {
-                    await thread.send({
-                        content: quote,
-                        components: [row],
-                    });
-                }
-            } catch (err) {
-                console.log(err);
-            }
-
-            await confirmation.update({
-                content: `Results: ${quoordinate.length} quotes`,
-                components: [],
-                ephemeral: true,
-            });
-
-
-        }
-      } catch (e) {
-        console.log(e);
-      }
-    } else if (confirmation.customId === "cancel") {
-      await confirmation.update({
-        content: "Action cancelled",
-        components: [],
+      //   const collectorFilter = (i) => i.user.id === interaction.user.id;
+      console.log("above awaitMessageComponent for second confirmation");
+      const confirmation2 = await response.awaitMessageComponent({
+        filter: collectorFilter,
+        time: 60_000,
       });
+      console.log("got second confirmation " + confirmation2.customId);
+
+      let embeddedSearches = [];
+      let chosenQuestion = null;
+
+      confirmation2.deferUpdate();
+
+      if (confirmation2.customId === "duel__question_1") {
+        embeddedSearches = await quosLogic(question1);
+        chosenQuestion = question1;
+      } else if (confirmation2.customId === "duel__question_2") {
+        embeddedSearches = await quosLogic(question2);
+        chosenQuestion = question2;
+      }
+
+      const quotes = embeddedSearches
+        .map(
+          (q) =>
+            `> ${q.text}\n\n-- ${
+              lookupBook(q.title)
+                ? `[${q.title}](${lookupBook(q.title)})`
+                : q.title
+            }\n\n`
+        )
+        .filter((q) => q.length < 2000);
+
+      const thread = await interaction.channel.threads.create({
+        name: chosenQuestion,
+        autoArchiveDuration: 60,
+        startMessage: interaction.channel.lastMessage,
+        type: ChannelType.GUILD_PUBLIC_THREAD,
+        reason: "Sending quotes as separate messages in one thread",
+      });
+
+      const makeAart = new ButtonBuilder()
+        .setCustomId("button_id")
+        .setLabel("Make Aart (+1 aart)")
+        .setStyle(ButtonStyle.Primary);
+
+      const learnMore = new ButtonBuilder()
+        .setCustomId("quos_learn_more")
+        .setLabel("Learn More (+1 quos)")
+        .setStyle(ButtonStyle.Primary);
+
+      const summarize = new ButtonBuilder()
+        .setCustomId("summarize")
+        .setLabel("Summarize (+1 quos)")
+        .setStyle(ButtonStyle.Primary);
+
+      const row2 = new ActionRowBuilder().addComponents(
+        makeAart,
+        learnMore,
+        summarize
+      );
+
+      for (const quote of quotes) {
+        await thread.send({
+          content: quote,
+          components: [row2],
+        });
+      }
+
+      await confirmation.editReply({
+        content: `Generating quotes based on your responses to two prompts. Topic: **${topic}** Question: **${chosenQuestion}**`,
+        components: [],
+        ephemeral: true,
+      });
+    } else {
+        console.log("not a valid customId");
     }
   } catch (e) {
     console.log(e);
