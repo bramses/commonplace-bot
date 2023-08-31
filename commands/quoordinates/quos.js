@@ -27,11 +27,11 @@ export async function quosLogic(query) {
 
 export const data = new SlashCommandBuilder()
   .setName("quos")
-  .setDescription("Generates a random quoordinate.")
+  .setDescription("Quote search")
   .addStringOption((option) =>
     option
       .setName("input")
-      .setDescription("The text to generate a quoordinate from.")
+      .setDescription("your search query -- if you don't know what to search, try the `/duel` command")
       .setRequired(true)
   );
 
