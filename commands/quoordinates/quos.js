@@ -76,7 +76,12 @@ export async function execute(interaction) {
     .setLabel("Learn More (+1 quos)")
     .setStyle(ButtonStyle.Primary);
 
-  const row = new ActionRowBuilder().addComponents(makeAart, learnMore);
+    const summarize = new ButtonBuilder()
+    .setCustomId("summarize")
+    .setLabel("Summarize (+1 quos)")
+    .setStyle(ButtonStyle.Primary);
+
+  const row = new ActionRowBuilder().addComponents(makeAart, learnMore, summarize);
 
   for (const quote of quotes) {
     await thread.send({

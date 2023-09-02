@@ -97,7 +97,7 @@ export async function execute(interaction) {
       let embeddedSearches = [];
       let chosenQuestion = null;
 
-      confirmation2.deferUpdate();
+      confirmation2.deferReply();
 
       if (confirmation2.customId === "duel__question_1") {
         embeddedSearches = await quosLogic(question1);

@@ -8,11 +8,15 @@ import {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
+  TextChannel,
+  NewsChannel,
+  ThreadChannel,
 } from "discord.js";
 import { main } from "./commands/dalle/aart.js";
 import { invocationWorkflow, preWorkflow } from "./invocation.js";
 import { quosLogic } from "./commands/quoordinates/quos.js";
 import { lookupBook } from "./books.js";
+import { complete } from "./openai_helper.js";
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 import config from "./config.json" assert { "type": "json" };
@@ -48,7 +52,21 @@ client.on(Events.InteractionCreate, async (interaction) => {
   if (!interaction.isChatInputCommand() && !interaction.isButton()) return;
 
   if (interaction.isButton()) {
-    if (interaction.customId === "button_id") {
+    if (interaction.customId === "summarize") {
+      await interaction.deferReply();
+      await preWorkflow(interaction);
+      // get text from interaction.message.content and pass it to complete
+      const summary = await complete(
+        `Summarize the following tldr in one or two sentences:\n${interaction.message.content}`
+      );
+      if (interaction.replied || interaction.deferred) {
+        await interaction.followUp(summary);
+      } else {
+        await interaction.reply(summary);
+      }
+      interaction.commandName = "summarize";
+      await invocationWorkflow(interaction, true);
+    } else if (interaction.customId === "button_id") {
       await interaction.deferReply();
       await preWorkflow(interaction);
       const { prompt, imageUrl } = await main(interaction.message.content);
@@ -62,6 +80,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
           `Art Prompt (**save the image it disappears in 24 hours!**): ${prompt} \n Image: [(url)](${imageUrl})`
         );
       }
+	  console.log(imageUrl)
       // set interaction command name to aart
       interaction.commandName = "aart";
       await invocationWorkflow(interaction, true);
@@ -80,32 +99,67 @@ client.on(Events.InteractionCreate, async (interaction) => {
         .setLabel("Learn More (+1 quos)")
         .setStyle(ButtonStyle.Primary);
 
-      const row = new ActionRowBuilder().addComponents(makeAart, learnMore);
+      const summarize = new ButtonBuilder()
+        .setCustomId("summarize")
+        .setLabel("Summarize (+1 quos)")
+        .setStyle(ButtonStyle.Primary);
 
-      const quotes = similarQuos
-        .filter((q) => {
-          return !interaction.message.content.includes(q.text);
-        })
-        .map(
-          (q) =>
-            `> ${q.text}\n\n-- ${
-              lookupBook(q.title)
-                ? `[${q.title}](${lookupBook(q.title)})`
-                : q.title
-            }\n\n`
-        )
-        .filter((q) => q.length < 2000);
-      // append quotes to thread
+      const row = new ActionRowBuilder().addComponents(
+        makeAart,
+        learnMore,
+        summarize
+      );
 
-      for (const quote of quotes) {
-        await interaction.followUp({
-          content: quote,
-          components: [row],
-        });
+      // get other messages in current thread
+      if (interaction.channel instanceof ThreadChannel) {
+        console.log(`Parent channel ID: ${interaction.channel.id}`);
+        const threadId = interaction.channel.id; // replace with your thread ID
+        const thread = await client.channels.fetch(threadId);
+        if (thread instanceof ThreadChannel) {
+          const messages = await thread.messages.fetch();
+          // console.log(messages); // logs a Collection of Message objects
+          // for each message just get content
+          const messagesContent = messages.map((m) => m.content);
+
+          const quotes = similarQuos
+            .filter((q) => {
+              return !interaction.message.content.includes(q.text);
+            })
+            .filter((q) => {
+              // q.text is the quote should not be in any of the messages from messagesContent
+              return !messagesContent.some((m) => m.includes(q.text));
+            })
+            .map(
+              (q) =>
+                `> ${q.text}\n\n-- ${
+                  lookupBook(q.title)
+                    ? `[${q.title}](${lookupBook(q.title)})`
+                    : q.title
+                }\n\n`
+            )
+            .filter((q) => q.length < 2000);
+          // append quotes to thread
+
+          if (quotes.length === 0) {
+            await interaction.followUp({
+              content: "No more quotes found!",
+              components: [],
+            });
+          } else {
+            for (const quote of quotes) {
+              await interaction.followUp({
+                content: quote,
+                components: [row],
+              });
+            }
+          }
+
+          interaction.commandName = "quos";
+          await invocationWorkflow(interaction, true);
+        } else {
+          console.log("The channel with the provided ID is not a thread.");
+        }
       }
-
-      interaction.commandName = "quos";
-      await invocationWorkflow(interaction, true);
     }
 
     return;

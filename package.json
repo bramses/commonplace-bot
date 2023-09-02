@@ -13,6 +13,7 @@
   "license": "ISC",
   "dependencies": {
     "discord.js": "^14.13.0",
+    "node-fetch": "^3.3.2",
     "openai": "^4.2.0",
     "uuid": "^9.0.0"
   }

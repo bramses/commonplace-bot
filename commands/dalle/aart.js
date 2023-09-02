@@ -59,5 +59,6 @@ export async function execute(interaction) {
     const userInput = interaction.options.getString('input');
     const { prompt, imageUrl } = await main(userInput);
     await interaction.editReply(`Art Prompt (**save the image it disappears in 24 hours!**): ${prompt} \n Image: [(url)](${imageUrl})`);
+    console.log(imageUrl)
     await invocationWorkflow(interaction);
 }
