@@ -84,6 +84,46 @@ client.on(Events.InteractionCreate, async (interaction) => {
       // set interaction command name to aart
       interaction.commandName = "aart";
       await invocationWorkflow(interaction, true);
+	} else if (interaction.customId === "share") { 
+		/*
+		1. get an image url from aart
+		2. post to quoordinates server with the following
+		{
+			"text": {userInput},
+			"url": {imageUrl}
+		}
+		3. get back a url and reply with it
+		*/
+		await interaction.deferReply();
+		await preWorkflow(interaction);
+		let userInput = interaction.message.content.trim();
+		// remove [cover](url) from userInput
+		const regex = /\[cover\]\((.*)\)/;
+		const match = userInput.match(regex);
+		if (match) {
+			userInput = userInput.replace(match[0], "").trim();
+		}
+
+
+		// await interaction.followUp("This feature is not yet implemented.");
+		
+		const { prompt, imageUrl } = await main(userInput);
+		const response = await fetch(config.quoordinates_server_share, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({ text: userInput, url: imageUrl }),
+		});
+		const json = await response.json();
+		console.log(json);
+		const shareUrl = json.result;
+
+		if (interaction.replied || interaction.deferred) {
+			await interaction.followUp(`${shareUrl}`);
+		}
+		interaction.commandName = "share";
+		await invocationWorkflow(interaction, true);
     } else if (interaction.customId === "quos_learn_more") {
       await interaction.deferReply();
       await preWorkflow(interaction);
