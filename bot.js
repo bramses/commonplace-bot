@@ -18,11 +18,59 @@ import { quosLogic } from "./commands/quoordinates/quos.js";
 import { lookupBook } from "./books.js";
 import { complete } from "./openai_helper.js";
 
+import { CronJob } from "cron";
+import { randomExport } from "./commands/quoordinates/random.js";
+
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 import config from "./config.json" assert { "type": "json" };
 
 client.on("ready", () => {
   console.log(`Logged in as ${client.user.tag}!`);
+  const channelId = "1144620340509675541"; // replace with your channel ID
+  const job = new CronJob(
+    "*/60 * * * *",
+    async () => {
+      console.log("You will see this message every hour");
+      const random = await randomExport();
+      const channel = await client.channels.fetch(channelId);
+
+	  const makeAart = new ButtonBuilder()
+		.setCustomId("button_id")
+		.setLabel("Make Aart (+1 aart)")
+		.setStyle(ButtonStyle.Primary);
+
+	  const learnMore = new ButtonBuilder()
+		.setCustomId("quos_learn_more")
+		.setLabel("Learn More (+1 quos)")
+		.setStyle(ButtonStyle.Primary);
+
+	  const summarize = new ButtonBuilder()
+		.setCustomId("summarize")
+		.setLabel("Summarize (+1 quos)")
+		.setStyle(ButtonStyle.Primary);
+
+	  const share = new ButtonBuilder()
+		.setCustomId("share")
+		.setLabel("Share")
+		.setStyle(ButtonStyle.Primary);
+
+	  const row = new ActionRowBuilder().addComponents(
+		makeAart,
+		learnMore,
+		summarize,
+		share
+	  );
+
+      await channel.send({
+		content: `> ${random.text}\n\n-- ${random.book.title}\n\n[cover](${random.book.cover_image_url})`,
+		components: [row],
+	  });
+    },
+    null,
+    true,
+    "America/New_York"
+  );
+  job.start();
 });
 
 client.commands = new Collection();
@@ -57,7 +105,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
       await preWorkflow(interaction);
       // get text from interaction.message.content and pass it to complete
       const summary = await complete(
-        `Summarize the following tldr in one or two sentences:\n${interaction.message.content}`
+        `TLDR to one or two sentences this:\n${interaction.message.content}`
       );
       if (interaction.replied || interaction.deferred) {
         await interaction.followUp(summary);
@@ -84,8 +132,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
       // set interaction command name to aart
       interaction.commandName = "aart";
       await invocationWorkflow(interaction, true);
-	} else if (interaction.customId === "share") { 
-		/*
+    } else if (interaction.customId === "share") {
+      /*
 		1. get an image url from aart
 		2. post to quoordinates server with the following
 		{
@@ -94,36 +142,35 @@ client.on(Events.InteractionCreate, async (interaction) => {
 		}
 		3. get back a url and reply with it
 		*/
-		await interaction.deferReply();
-		await preWorkflow(interaction);
-		let userInput = interaction.message.content.trim();
-		// remove [cover](url) from userInput
-		const regex = /\[cover\]\((.*)\)/;
-		const match = userInput.match(regex);
-		if (match) {
-			userInput = userInput.replace(match[0], "").trim();
-		}
+      await interaction.deferReply();
+      await preWorkflow(interaction);
+      let userInput = interaction.message.content.trim();
+      // remove [cover](url) from userInput
+      const regex = /\[cover\]\((.*)\)/;
+      const match = userInput.match(regex);
+      if (match) {
+        userInput = userInput.replace(match[0], "").trim();
+      }
 
+      // await interaction.followUp("This feature is not yet implemented.");
 
-		// await interaction.followUp("This feature is not yet implemented.");
-		
-		const { prompt, imageUrl } = await main(userInput);
-		const response = await fetch(config.quoordinates_server_share, {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify({ text: userInput, url: imageUrl }),
-		});
-		const json = await response.json();
-		console.log(json);
-		const shareUrl = json.result;
+      const { prompt, imageUrl } = await main(userInput);
+      const response = await fetch(config.quoordinates_server_share, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ text: userInput, url: imageUrl }),
+      });
+      const json = await response.json();
+      console.log(json);
+      const shareUrl = json.result;
 
-		if (interaction.replied || interaction.deferred) {
-			await interaction.followUp(`${shareUrl}`);
-		}
-		interaction.commandName = "share";
-		await invocationWorkflow(interaction, true);
+      if (interaction.replied || interaction.deferred) {
+        await interaction.followUp(`${shareUrl}`);
+      }
+      interaction.commandName = "share";
+      await invocationWorkflow(interaction, true);
     } else if (interaction.customId === "quos_learn_more") {
       await interaction.deferReply();
       await preWorkflow(interaction);
@@ -144,10 +191,16 @@ client.on(Events.InteractionCreate, async (interaction) => {
         .setLabel("Summarize (+1 quos)")
         .setStyle(ButtonStyle.Primary);
 
+      const share = new ButtonBuilder()
+        .setCustomId("share")
+        .setLabel("Share")
+        .setStyle(ButtonStyle.Primary);
+
       const row = new ActionRowBuilder().addComponents(
         makeAart,
         learnMore,
-        summarize
+        summarize,
+        share
       );
 
       // get other messages in current thread
@@ -232,7 +285,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
         } else {
           console.log("Tin the reply or defer");
         }
-		await invocationWorkflow(interaction, true);
+        await invocationWorkflow(interaction, true);
       }
     }
 

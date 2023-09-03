@@ -8,7 +8,7 @@ export async function randomExport() {
     method: "GET",
   });
   const json = await response.json();
-  console.log(json);
+
   return json[0];
 }
 

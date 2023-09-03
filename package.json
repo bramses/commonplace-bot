@@ -12,6 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "cron": "^2.4.3",
     "discord.js": "^14.13.0",
     "node-fetch": "^3.3.2",
     "openai": "^4.2.0",

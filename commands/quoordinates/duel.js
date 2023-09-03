@@ -55,7 +55,7 @@ export async function execute(interaction) {
       let topic = null;
       if (confirmation.customId === "duel__topic_1") {
         topic = confirmation.message.components[0].components[0].label;
-      } else  if (confirmation.customId === "duel__topic_2") {
+      } else if (confirmation.customId === "duel__topic_2") {
         topic = confirmation.message.components[0].components[1].label;
       }
 
@@ -79,7 +79,9 @@ export async function execute(interaction) {
           .setStyle(ButtonStyle.Primary)
       );
 
-      console.log("waiting for second confirmation as " + confirmation.customId);
+      console.log(
+        "waiting for second confirmation as " + confirmation.customId
+      );
       await confirmation.update({
         content: `Which question do you prefer?\n${question1}\n${question2}`,
         components: [row],
@@ -141,10 +143,16 @@ export async function execute(interaction) {
         .setLabel("Summarize (+1 quos)")
         .setStyle(ButtonStyle.Primary);
 
+      const share = new ButtonBuilder()
+        .setCustomId("share")
+        .setLabel("Share")
+        .setStyle(ButtonStyle.Primary);
+
       const row2 = new ActionRowBuilder().addComponents(
         makeAart,
         learnMore,
-        summarize
+        summarize,
+        share
       );
 
       for (const quote of quotes) {
@@ -160,7 +168,7 @@ export async function execute(interaction) {
         ephemeral: true,
       });
     } else {
-        console.log("not a valid customId");
+      console.log("not a valid customId");
     }
   } catch (e) {
     console.log(e);
