@@ -130,22 +130,22 @@ export async function execute(interaction) {
 
       const makeAart = new ButtonBuilder()
         .setCustomId("button_id")
-        .setLabel("Make Aart (+1 aart)")
+        .setLabel("aart")
         .setStyle(ButtonStyle.Primary);
 
       const learnMore = new ButtonBuilder()
         .setCustomId("quos_learn_more")
-        .setLabel("Learn More (+1 quos)")
+        .setLabel("delve")
         .setStyle(ButtonStyle.Primary);
 
       const summarize = new ButtonBuilder()
         .setCustomId("summarize")
-        .setLabel("Summarize (+1 quos)")
+        .setLabel("tldr")
         .setStyle(ButtonStyle.Primary);
 
       const share = new ButtonBuilder()
         .setCustomId("share")
-        .setLabel("Share")
+        .setLabel("share")
         .setStyle(ButtonStyle.Primary);
 
       const row2 = new ActionRowBuilder().addComponents(

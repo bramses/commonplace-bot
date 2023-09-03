@@ -36,22 +36,22 @@ client.on("ready", () => {
 
 	  const makeAart = new ButtonBuilder()
 		.setCustomId("button_id")
-		.setLabel("Make Aart (+1 aart)")
+		.setLabel("aart")
 		.setStyle(ButtonStyle.Primary);
 
 	  const learnMore = new ButtonBuilder()
 		.setCustomId("quos_learn_more")
-		.setLabel("Learn More (+1 quos)")
+		.setLabel("delve")
 		.setStyle(ButtonStyle.Primary);
 
 	  const summarize = new ButtonBuilder()
 		.setCustomId("summarize")
-		.setLabel("Summarize (+1 quos)")
+		.setLabel("tldr")
 		.setStyle(ButtonStyle.Primary);
 
 	  const share = new ButtonBuilder()
 		.setCustomId("share")
-		.setLabel("Share")
+		.setLabel("share")
 		.setStyle(ButtonStyle.Primary);
 
 	  const row = new ActionRowBuilder().addComponents(
@@ -105,7 +105,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
       await preWorkflow(interaction);
       // get text from interaction.message.content and pass it to complete
       const summary = await complete(
-        `TLDR to one or two sentences this:\n${interaction.message.content}`
+        `tldr to one or two sentences this:\n${interaction.message.content}`
       );
       if (interaction.replied || interaction.deferred) {
         await interaction.followUp(summary);
@@ -178,22 +178,22 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
       const makeAart = new ButtonBuilder()
         .setCustomId("button_id")
-        .setLabel("Make Aart (+1 aart)")
+        .setLabel("aart")
         .setStyle(ButtonStyle.Primary);
 
       const learnMore = new ButtonBuilder()
         .setCustomId("quos_learn_more")
-        .setLabel("Learn More (+1 quos)")
+        .setLabel("delve")
         .setStyle(ButtonStyle.Primary);
 
       const summarize = new ButtonBuilder()
         .setCustomId("summarize")
-        .setLabel("Summarize (+1 quos)")
+        .setLabel("tldr")
         .setStyle(ButtonStyle.Primary);
 
       const share = new ButtonBuilder()
         .setCustomId("share")
-        .setLabel("Share")
+        .setLabel("share")
         .setStyle(ButtonStyle.Primary);
 
       const row = new ActionRowBuilder().addComponents(
