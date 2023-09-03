@@ -80,7 +80,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
           `Art Prompt (**save the image it disappears in 24 hours!**): ${prompt} \n Image: [(url)](${imageUrl})`
         );
       }
-	  console.log(imageUrl)
+      console.log(imageUrl);
       // set interaction command name to aart
       interaction.commandName = "aart";
       await invocationWorkflow(interaction, true);
@@ -117,8 +117,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
         const thread = await client.channels.fetch(threadId);
         if (thread instanceof ThreadChannel) {
           const messages = await thread.messages.fetch();
-          // console.log(messages); // logs a Collection of Message objects
-          // for each message just get content
           const messagesContent = messages.map((m) => m.content);
 
           const quotes = similarQuos
@@ -159,6 +157,42 @@ client.on(Events.InteractionCreate, async (interaction) => {
         } else {
           console.log("The channel with the provided ID is not a thread.");
         }
+      } else {
+        if (interaction.replied || interaction.deferred) {
+          const quotes = similarQuos
+            .filter((q) => {
+              return !interaction.message.content.includes(q.text);
+            })
+            .map(
+              (q) =>
+                `> ${q.text}\n\n-- ${
+                  lookupBook(q.title)
+                    ? `[${q.title}](${lookupBook(q.title)})`
+                    : q.title
+                }\n\n`
+            )
+            .filter((q) => q.length < 2000);
+          // append quotes to thread
+
+          if (quotes.length === 0) {
+            await interaction.followUp({
+              content: "No more quotes found!",
+              components: [],
+            });
+          } else {
+            for (const quote of quotes) {
+              await interaction.followUp({
+                content: quote,
+                components: [row],
+              });
+            }
+          }
+
+          interaction.commandName = "quos";
+        } else {
+          console.log("Tin the reply or defer");
+        }
+		await invocationWorkflow(interaction, true);
       }
     }
 
