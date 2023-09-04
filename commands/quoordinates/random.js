@@ -1,5 +1,7 @@
 import { SlashCommandBuilder, ButtonBuilder, ActionRowBuilder, ButtonStyle } from "discord.js";
 import config from "../../config.json" assert { "type": "json" };
+import { lookupBook } from "../../books.js";
+
 
 const { quoordinates_server_random } = config;
 
@@ -48,8 +50,9 @@ export async function execute(interaction) {
     share
   );
 
+  // \n\n[cover](${random.book.cover_image_url})
   await interaction.reply({
-    content: `> ${random.text}\n\n-- ${random.book.title}\n\n[cover](${random.book.cover_image_url})`,
+    content: `> ${random.text}\n\n-- [${random.book.title}](${lookupBook(random.book.title)})`,
     components: [row],
   });
 }

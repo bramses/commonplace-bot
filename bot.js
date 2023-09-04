@@ -11,6 +11,7 @@ import {
   TextChannel,
   NewsChannel,
   ThreadChannel,
+  Partials,
 } from "discord.js";
 import { main } from "./commands/dalle/aart.js";
 import { invocationWorkflow, preWorkflow } from "./invocation.js";
@@ -21,7 +22,14 @@ import { complete } from "./openai_helper.js";
 import { CronJob } from "cron";
 import { randomExport } from "./commands/quoordinates/random.js";
 
-const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+const client = new Client({
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.GuildMessageReactions,
+  ],
+  partials: [Partials.Message, Partials.Channel, Partials.Reaction],
+});
 import config from "./config.json" assert { "type": "json" };
 
 client.on("ready", () => {
@@ -34,37 +42,37 @@ client.on("ready", () => {
       const random = await randomExport();
       const channel = await client.channels.fetch(channelId);
 
-	  const makeAart = new ButtonBuilder()
-		.setCustomId("button_id")
-		.setLabel("aart")
-		.setStyle(ButtonStyle.Primary);
+      const makeAart = new ButtonBuilder()
+        .setCustomId("button_id")
+        .setLabel("aart")
+        .setStyle(ButtonStyle.Primary);
 
-	  const learnMore = new ButtonBuilder()
-		.setCustomId("quos_learn_more")
-		.setLabel("delve")
-		.setStyle(ButtonStyle.Primary);
+      const learnMore = new ButtonBuilder()
+        .setCustomId("quos_learn_more")
+        .setLabel("delve")
+        .setStyle(ButtonStyle.Primary);
 
-	  const summarize = new ButtonBuilder()
-		.setCustomId("summarize")
-		.setLabel("tldr")
-		.setStyle(ButtonStyle.Primary);
+      const summarize = new ButtonBuilder()
+        .setCustomId("summarize")
+        .setLabel("tldr")
+        .setStyle(ButtonStyle.Primary);
 
-	  const share = new ButtonBuilder()
-		.setCustomId("share")
-		.setLabel("share")
-		.setStyle(ButtonStyle.Primary);
+      const share = new ButtonBuilder()
+        .setCustomId("share")
+        .setLabel("share")
+        .setStyle(ButtonStyle.Primary);
 
-	  const row = new ActionRowBuilder().addComponents(
-		makeAart,
-		learnMore,
-		summarize,
-		share
-	  );
+      const row = new ActionRowBuilder().addComponents(
+        makeAart,
+        learnMore,
+        summarize,
+        share
+      );
 
       await channel.send({
-		content: `> ${random.text}\n\n-- ${random.book.title}\n\n[cover](${random.book.cover_image_url})`,
-		components: [row],
-	  });
+        content: `> ${random.text}\n\n-- ${random.book.title}\n\n[cover](${random.book.cover_image_url})`,
+        components: [row],
+      });
     },
     null,
     true,
@@ -95,6 +103,36 @@ for (const folder of commandFolders) {
     }
   }
 }
+
+client.on(Events.MessageReactionAdd, async (reaction, user) => {
+  // When a reaction is received, check if the structure is partial
+  if (reaction.partial) {
+    // If the message this reaction belongs to was removed, the fetching might result in an API error which should be handled
+    try {
+      await reaction.fetch();
+    } catch (error) {
+      console.error("Something went wrong when fetching the message:", error);
+      // Return as `reaction.message.author` may be undefined/null
+      return;
+    }
+  }
+
+  // Now the message has been cached and is fully available
+  console.log(
+    `${reaction.message.author}'s message "${reaction.message.content}" gained a reaction!`
+  );
+  // The reaction is now also fully available and the properties will be reflected accurately:
+  console.log(
+    `${reaction.count} user(s) have given the same reaction to this message! ${reaction.emoji.name}`
+  );
+
+  // log the reaction and if reaction is :floppy_disk: then dm the user with the message content
+  if (reaction.emoji.name === "💾") {
+	await user.send(
+	  `${reaction.message.content}`
+	);
+  }
+});
 
 client.on(Events.InteractionCreate, async (interaction) => {
   if (!interaction.isChatInputCommand() && !interaction.isButton()) return;
@@ -252,10 +290,18 @@ client.on(Events.InteractionCreate, async (interaction) => {
         }
       } else {
         if (interaction.replied || interaction.deferred) {
+		  // get the last 10 messages in the channel
+		  const messages = await interaction.channel.messages.fetch({ limit: 10 });
+		  const messagesContent = messages.map((m) => m.content);
+		
           const quotes = similarQuos
             .filter((q) => {
               return !interaction.message.content.includes(q.text);
             })
+			.filter((q) => {
+				// q.text is the quote should not be in any of the messages from messagesContent
+				return !messagesContent.some((m) => m.includes(q.text));
+			})
             .map(
               (q) =>
                 `> ${q.text}\n\n-- ${
