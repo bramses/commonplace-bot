@@ -52,7 +52,7 @@ export async function execute(interaction) {
 
   // \n\n[cover](${random.book.cover_image_url})
   await interaction.reply({
-    content: `> ${random.text}\n\n-- [${random.book.title}](${lookupBook(random.book.title)})`,
+    content: `> ${random.text}\n\n-- [${random.book.title} (**affiliate link**)](${lookupBook(random.book.title)})`,
     components: [row],
   });
 }

@@ -70,7 +70,7 @@ client.on("ready", () => {
       );
 
       await channel.send({
-        content: `> ${random.text}\n\n-- ${random.book.title}\n\n[cover](${random.book.cover_image_url})`,
+        content: `> ${random.text}\n\n-- [${random.book.title} (*affiliate link*)](${lookupBook(random.book.title)})`,
         components: [row],
       });
     },
@@ -141,9 +141,10 @@ client.on(Events.InteractionCreate, async (interaction) => {
     if (interaction.customId === "summarize") {
       await interaction.deferReply();
       await preWorkflow(interaction);
+	  console.log(interaction.message.content.replace(/\(\*\*affiliate link\*\*\)/g, "").replace(/\[(.*?)\]\((.*?)\)/g, "$1").trim())
       // get text from interaction.message.content and pass it to complete
       const summary = await complete(
-        `tldr to one or two sentences this:\n${interaction.message.content}`
+        `tldr to one or two sentences this:\n${interaction.message.content.replace(/\(\*\*affiliate link\*\*\)/g, "").replace(/\[(.*?)\]\((.*?)\)/g, "$1").trim()}`
       );
       if (interaction.replied || interaction.deferred) {
         await interaction.followUp(summary);
@@ -189,6 +190,15 @@ client.on(Events.InteractionCreate, async (interaction) => {
       if (match) {
         userInput = userInput.replace(match[0], "").trim();
       }
+
+	  // remove leading >
+	  userInput = userInput.replace(/^>/, "").trim();
+
+	  // remove any markdown links
+	  userInput = userInput.replace(/\[(.*?)\]\((.*?)\)/g, "$1");
+
+	  // remove (**affiliate link**) from userInput
+	  userInput = userInput.replace(/\(\*\*affiliate link\*\*\)/g, "").trim();
 
       // await interaction.followUp("This feature is not yet implemented.");
 
@@ -262,7 +272,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
               (q) =>
                 `> ${q.text}\n\n-- ${
                   lookupBook(q.title)
-                    ? `[${q.title}](${lookupBook(q.title)})`
+                    ? `[${q.title} (**affiliate link**)](${lookupBook(q.title)})`
                     : q.title
                 }\n\n`
             )
@@ -306,7 +316,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
               (q) =>
                 `> ${q.text}\n\n-- ${
                   lookupBook(q.title)
-                    ? `[${q.title}](${lookupBook(q.title)})`
+                    ? `[${q.title} (**affiliate link**)](${lookupBook(q.title)})`
                     : q.title
                 }\n\n`
             )

@@ -114,7 +114,7 @@ export async function execute(interaction) {
           (q) =>
             `> ${q.text}\n\n-- ${
               lookupBook(q.title)
-                ? `[${q.title}](${lookupBook(q.title)})`
+                ? `[${q.title} (**affiliate link**)](${lookupBook(q.title)})`
                 : q.title
             }\n\n`
         )

@@ -53,7 +53,7 @@ export async function execute(interaction) {
     .map(
       (q) =>
         `> ${q.text}\n\n-- ${
-          lookupBook(q.title) ? `[${q.title}](${lookupBook(q.title)})` : q.title
+          lookupBook(q.title) ? `[${q.title} (**affiliate link**)](${lookupBook(q.title)})` : q.title
         }\n\n`
     )
     .filter((q) => q.length < 2000);
