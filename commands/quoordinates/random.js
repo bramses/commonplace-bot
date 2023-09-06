@@ -23,9 +23,18 @@ export const data = randomCommand;
 export async function execute(interaction) {
   const random = await randomExport();
 
-  const makeAart = new ButtonBuilder()
-    .setCustomId("button_id")
-    .setLabel("aart")
+  while (random.text.length > 2000) {
+    random = await randomExport();
+  }
+
+//   const makeAart = new ButtonBuilder()
+//     .setCustomId("button_id")
+//     .setLabel("aart")
+//     .setStyle(ButtonStyle.Primary);
+
+    const repost = new ButtonBuilder()
+    .setCustomId("repost")
+    .setLabel("repost")
     .setStyle(ButtonStyle.Primary);
 
   const learnMore = new ButtonBuilder()
@@ -44,7 +53,7 @@ export async function execute(interaction) {
     .setStyle(ButtonStyle.Primary);
 
   const row = new ActionRowBuilder().addComponents(
-    makeAart,
+    repost,
     learnMore,
     summarize,
     share

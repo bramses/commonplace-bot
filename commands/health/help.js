@@ -15,5 +15,10 @@ Buttons:
 - \`aart\` - Creates an abstract image based on the quote. Costs 1 \`aart\` credit.
 - \`delve\` - Delve deeper into the quotes main ideas, explore its neighbors. Costs 1 \`delve\` credit.
 - \`tldr\` - Summarize the quote. Costs 1 \`tldr\` credit.
-- \`share\` - Share the quote by overlaying the quote text onto an \`aart\` creation. Every time is unique! Costs 1 \`share\` credit.`);
+- \`share\` - Share the quote by overlaying the quote text onto an \`aart\` creation. Every time is unique! Costs 1 \`share\` credit.
+- \`repost\` - Repost the quote to a more fitting channel. Costs 1 \`repost\` credit. Only available from the \`/random\` command.
+
+React to any message with the floppy disk emoji (💾, : floppy_disk : (no spaces)) to save the quote to your personal library.
+
+Bramdroid is open source! You can see the bot [source code here](https://github.com/bramses/bramdroid)`);
 }

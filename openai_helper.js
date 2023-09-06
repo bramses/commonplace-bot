@@ -4,12 +4,11 @@ import config from './config.json' assert { "type": "json" };
 
 
 
-const  { OPENAI_API_KEY } = config;
+const  { OPENAI_API_KEY, OPENAI_API_ORG } = config;
 
-const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
+const openai = new OpenAI({ apiKey: OPENAI_API_KEY, organization: OPENAI_API_ORG });
 
-export async function complete(prompt) {
-  // console.log(`Summarizing: ${text}`);
+export async function complete(prompt, model = "gpt-4") {
   const completion = await openai.chat.completions.create({
     messages: [
       {
@@ -17,7 +16,7 @@ export async function complete(prompt) {
         content: prompt,
       },
     ],
-    model: "gpt-4",
+    model,
   });
 
   return completion.choices[0].message.content;
