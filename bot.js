@@ -168,11 +168,11 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
       if (interaction.replied || interaction.deferred) {
         await interaction.followUp(
-          `Art Prompt (**save the image it disappears in 24 hours!**): ${prompt} \n Image: [(url)](${imageUrl})`
+          `Art Prompt (**save the image -- it disappears in 24 hours!**): ${prompt} \n Image: [(url)](${imageUrl})`
         );
       } else {
         await interaction.reply(
-          `Art Prompt (**save the image it disappears in 24 hours!**): ${prompt} \n Image: [(url)](${imageUrl})`
+          `Art Prompt (**save the image -- it disappears in 24 hours!**): ${prompt} \n Image: [(url)](${imageUrl})`
         );
       }
       console.log(imageUrl);
@@ -398,18 +398,18 @@ client.on(Events.InteractionCreate, async (interaction) => {
     //       .join("\n")}`
     //   );
 	  const channel = await complete(
-        `Which of these channels descriptions matches this book quote the most? Just return the channel name. Quote: ${
+        `Which of these channels descriptions matches this book quote the most?  The descriptions are from the 2011 Dewey Decimal Classification system. Just return the channel name, say nothing else. Quote: ${
           interaction.message.content.replace(/\[(.*?)\]\((.*?)\)/g, "$1").replace(/\(\*\*affiliate link\*\*\)/g, "")
         } Channels:\n\n${channels
           .map((c) => c.name + " : " + c.description)
           .join("\n\n")}`, "gpt-3.5-turbo"
       );
-	  console.log(`Which of these channels descriptions matches this book quote the most? Just return the channel name. Quote: ${
-		interaction.message.content.replace(/\[(.*?)\]\((.*?)\)/g, "$1").replace(/\(\*\*affiliate link\*\*\)/g, "")
-	  } Channels:\n\n${channels
-		.map((c) => c.name + " : " + c.description)
-		.join("\n\n")}`)
-      console.log(channel); // 200-religion : [religion faith spirituality theology]
+	//   console.log(`Which of these channels descriptions matches this book quote the most? Just return the channel name. Quote: ${
+	// 	interaction.message.content.replace(/\[(.*?)\]\((.*?)\)/g, "$1").replace(/\(\*\*affiliate link\*\*\)/g, "")
+	//   } Channels:\n\n${channels
+	// 	.map((c) => c.name + " : " + c.description)
+	// 	.join("\n\n")}`)
+    //   console.log(channel); // 200-religion : [religion faith spirituality theology]
       const channelName = channel.split(" : ")[0];
       const targetChannelId = channels.find((c) => c.name === channelName).id;
 
@@ -429,7 +429,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
 	  */
 
-      targetChannel.send({
+      const newMsg = await targetChannel.send({
         content: interaction.message.content,
         components: interaction.message.components,
       });
@@ -438,7 +438,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
       await interaction.message.delete();
       // reply ephemeral with link to reposted message
       await interaction.editReply({
-        content: `Moved to https://discord.com/channels/${interaction.guildId}/${targetChannelId}/${interaction.message.id}`,
+        content: `Moved to https://discord.com/channels/${interaction.guildId}/${targetChannelId}/${newMsg.id}`,
         ephemeral: true,
       });
     } else if (interaction.customId === "quos_learn_more") {
