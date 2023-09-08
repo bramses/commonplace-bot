@@ -22,6 +22,7 @@ import { complete } from "./openai_helper.js";
 
 import { CronJob } from "cron";
 import { randomExport } from "./commands/quoordinates/random.js";
+import { quoteRoyale } from "./quote-royale.js";
 
 const client = new Client({
   intents: [
@@ -82,6 +83,9 @@ client.on("ready", () => {
     "America/New_York"
   );
   job.start();
+
+  // test quote royale
+  quoteRoyale(client);
 });
 
 client.commands = new Collection();
@@ -162,7 +166,32 @@ client.on(Events.InteractionCreate, async (interaction) => {
       }
       interaction.commandName = "summarize";
       await invocationWorkflow(interaction, true);
-    } else if (interaction.customId === "button_id") {
+    } else if (interaction.customId.includes("qroyale__quote_")) { 
+		// on button click show ephhemeral message thanking user for voting
+    	// if user has already voted, show ephemeral message saying they can only vote once per day
+		// await interaction.deferReply();
+		const buttonId = interaction.customId;
+		const quoteNumber = Number(buttonId.split("qroyale__quote_")[1]);
+		console.log(`Quote number: ${quoteNumber}`);	
+		const quotesVotes = JSON.parse(fs.readFileSync("./quotes-votes.json"));
+		const userId = interaction.user.id;
+		// { quotes: quotes, votes: [0,0,0,0,0], voters: [] }
+		const voters = quotesVotes.voters;
+		if (voters.includes(userId)) {
+			await interaction.reply({
+				content: `You have already voted today! Check back at 11 EST for the results. And come back tomorrow to vote again on a new set of quotes!`,
+				ephemeral: true
+			});
+			return;
+		}
+		quotesVotes.votes[quoteNumber - 1] = quotesVotes.votes[quoteNumber - 1] + 1;
+		quotesVotes.voters.push(userId);
+		fs.writeFileSync("./quotes-votes.json", JSON.stringify(quotesVotes, null, 2));
+		await interaction.reply({
+			content: `You voted for quote ${quoteNumber}! Check back at 11 EST for the results. And come back tomorrow to vote again on a new set of quotes!`,
+			ephemeral: true
+		});
+	} else if (interaction.customId === "button_id") {
       await interaction.deferReply();
       await preWorkflow(interaction);
       const { prompt, imageUrl } = await main(interaction.message.content);

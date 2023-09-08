@@ -8,7 +8,7 @@ import {
 } from "discord.js";
 import fs from "fs";
 import { complete } from "../../openai_helper.js";
-import { quosLogic } from "./quos.js";
+import { quosLogic } from "../../commands/quoordinates/quos.js";
 import { lookupBook } from "../../books.js";
 
 const duelCommand = new SlashCommandBuilder()
