@@ -3,8 +3,6 @@ import config from '../../config.json' assert { "type": "json" };
 import { SlashCommandBuilder } from 'discord.js';
 import { invocationWorkflow, preWorkflow } from '../../invocation.js';
 
-
-
 const  { OPENAI_API_KEY } = config;
 
 const openai = new OpenAI({ apiKey: OPENAI_API_KEY });

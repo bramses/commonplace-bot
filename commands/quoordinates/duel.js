@@ -13,7 +13,7 @@ import { lookupBook } from "../../books.js";
 
 const duelCommand = new SlashCommandBuilder()
   .setName("duel")
-  .setDescription("Find quotes based on your responses to two prompts.");
+  .setDescription("[DO NOT USE] Find quotes based on your responses to two prompts.");
 
 export const data = duelCommand;
 

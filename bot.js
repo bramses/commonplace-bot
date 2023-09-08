@@ -10,6 +10,7 @@ import {
   ButtonStyle,
   TextChannel,
   NewsChannel,
+  ButtonComponent,
   ThreadChannel,
   Partials,
 } from "discord.js";
@@ -415,23 +416,38 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
       const targetChannel = await client.channels.fetch(targetChannelId);
 
-      /*
-	  TODO:
-			[{"type":1,"components":[{"type":2,"style":1,"label":"repost","custom_id":"repost"},{"type":2,"style":1,"label":"delve","custom_id":"quos_learn_more"},{"type":2,"style":1,"label":"tldr","custom_id":"summarize"},{"type":2,"style":1,"label":"share","custom_id":"share"}]}]
-			remove the repost button
+   
+	  // create new components without the repost button
+	  const makeAart = new ButtonBuilder()
+	  		.setCustomId("button_id")
+			.setLabel("aart")
+			.setStyle(ButtonStyle.Primary);
 
-			const filteredComponents = interaction.message.components.map((c) => {
-        return {
-          type: c.type,
-          components: c.components.filter((c) => c.customId !== "repost"),
-        };
-      });
+	const learnMore = new ButtonBuilder()
+			.setCustomId("quos_learn_more")
+			.setLabel("delve")
+			.setStyle(ButtonStyle.Primary);
 
-	  */
+	const summarize = new ButtonBuilder()
+			.setCustomId("summarize")
+			.setLabel("tldr")
+			.setStyle(ButtonStyle.Primary);
+
+	const share = new ButtonBuilder()
+			.setCustomId("share")
+			.setLabel("share")
+			.setStyle(ButtonStyle.Primary);
+
+	const row = new ActionRowBuilder().addComponents(
+			makeAart,
+			learnMore,
+			summarize,
+			share
+		);
 
       const newMsg = await targetChannel.send({
         content: interaction.message.content,
-        components: interaction.message.components,
+        components: [row],
       });
       interaction.commandName = "repost";
       // delete the original message
