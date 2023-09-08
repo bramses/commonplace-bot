@@ -23,7 +23,7 @@ const createQuoteRoyaleChannel = async (client) => {
   const channel = await guild.channels.create({
     name: `quote-royale-${new Date().toISOString().split("T")[0]}`,
     type: ChannelType.GUILD_TEXT,
-    topic: "Vote for your favorite quote",
+    topic: "ONLY ONE QUOTE REIGNS SUPREME.",
     reason: "Quote Royale",
   });
   return channel;
@@ -80,9 +80,9 @@ const postQuotes = async (channel) => {
   // write quotes to json file with { quotes: quotes, votes: 0, voters: [] }
   const quotesWithVotes = {
     quotes: quotes,
-    votes: [0, 0, 0, 0 ,0],
+    votes: [0, 0, 0, 0, 0],
     voters: [],
-  }
+  };
 
   // write quotes to json file with { quote: quote, votes: 0, voters: [] }
   fs.writeFileSync(
@@ -93,18 +93,73 @@ const postQuotes = async (channel) => {
   return message;
 };
 
+const calculateWinner = (quotesVotes) => {
+  let winner = 0;
+  let winnerIndex = 0;
+  for (let i = 0; i < quotesVotes.votes.length; i++) {
+    if (quotesVotes.votes[i] > winner) {
+      winner = quotesVotes.votes[i];
+      winnerIndex = i;
+    }
+  }
+
+  return {
+    quote: quotesVotes.quotes[winnerIndex],
+    votes: winner,
+  };
+};
+
 export const quoteRoyale = async (client) => {
   const guild = await client.guilds.fetch("1059980663404646420");
+  let winner = null;
+  let channelDate = null;
 
   // check if channel already exists
   const existingChannel = guild.channels.cache.find((channel) =>
     channel.name.startsWith("quote-royale-")
   );
   if (existingChannel) {
-    return existingChannel;
+    // check if channel matches today's date
+    const today = new Date().toISOString().split("T")[0];
+    // quote-royale-2023-09-08
+    channelDate =
+      existingChannel.name.split("-")[2] +
+      "-" +
+      existingChannel.name.split("-")[3] +
+      "-" +
+      existingChannel.name.split("-")[4];
+    console.log(`today: ${today}, channelDate: ${channelDate}`);
+
+    if (today === channelDate) {
+      // channel is up to date, do nothing
+      return existingChannel;
+    }
+
+    const quotesVotes = JSON.parse(fs.readFileSync("./quotes-votes.json"));
+    winner = calculateWinner(quotesVotes);
+
+    // channel is not up to date, delete it
+    await existingChannel.delete();
   }
+
   const channel = await createQuoteRoyaleChannel(client);
   const message = await postQuotes(channel);
+
+  if (winner && channelDate) {
+    // post winner in general 1059980664222515273
+    const general = await guild.channels.fetch("1059980664222515273");
+    await general.send({
+      content: `THE WINNER OF QUOTE ROYALE ${channelDate} IS...\n\n> ${
+        winner.quote.text
+      }\n\n-- [${winner.quote.book.title} (**affiliate link**)](${lookupBook(
+        winner.quote.book.title
+      )}).
+        
+        Vote for your favorite from the next five contenders in Quote Royale! <#${
+            channel.id
+        }>`,
+    });
+  }
 
   return message;
 };

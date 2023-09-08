@@ -179,7 +179,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 		const voters = quotesVotes.voters;
 		if (voters.includes(userId)) {
 			await interaction.reply({
-				content: `You have already voted today! Check back at 11 EST for the results. And come back tomorrow to vote again on a new set of quotes!`,
+				content: `You have already voted today! Check back tomorrow (EST) for the results. And come back tomorrow to vote again on a new set of quotes!`,
 				ephemeral: true
 			});
 			return;
@@ -188,7 +188,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 		quotesVotes.voters.push(userId);
 		fs.writeFileSync("./quotes-votes.json", JSON.stringify(quotesVotes, null, 2));
 		await interaction.reply({
-			content: `You voted for quote ${quoteNumber}! Check back at 11 EST for the results. And come back tomorrow to vote again on a new set of quotes!`,
+			content: `You voted for quote ${quoteNumber}! Check back tomorrow (EST) for the results. And come back tomorrow to vote again on a new set of quotes!`,
 			ephemeral: true
 		});
 	} else if (interaction.customId === "button_id") {
