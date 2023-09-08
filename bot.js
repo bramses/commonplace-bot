@@ -13,6 +13,7 @@ import {
   ButtonComponent,
   ThreadChannel,
   Partials,
+  ChannelType,
 } from "discord.js";
 import { main } from "./commands/dalle/aart.js";
 import { invocationWorkflow, preWorkflow } from "./invocation.js";
@@ -166,32 +167,167 @@ client.on(Events.InteractionCreate, async (interaction) => {
       }
       interaction.commandName = "summarize";
       await invocationWorkflow(interaction, true);
-    } else if (interaction.customId.includes("qroyale__quote_")) { 
-		// on button click show ephhemeral message thanking user for voting
-    	// if user has already voted, show ephemeral message saying they can only vote once per day
-		// await interaction.deferReply();
-		const buttonId = interaction.customId;
-		const quoteNumber = Number(buttonId.split("qroyale__quote_")[1]);
-		console.log(`Quote number: ${quoteNumber}`);	
-		const quotesVotes = JSON.parse(fs.readFileSync("./quotes-votes.json"));
-		const userId = interaction.user.id;
-		// { quotes: quotes, votes: [0,0,0,0,0], voters: [] }
-		const voters = quotesVotes.voters;
-		if (voters.includes(userId)) {
-			await interaction.reply({
-				content: `You have already voted today! Check back tomorrow (EST) for the results. And come back tomorrow to vote again on a new set of quotes!`,
-				ephemeral: true
-			});
-			return;
-		}
-		quotesVotes.votes[quoteNumber - 1] = quotesVotes.votes[quoteNumber - 1] + 1;
-		quotesVotes.voters.push(userId);
-		fs.writeFileSync("./quotes-votes.json", JSON.stringify(quotesVotes, null, 2));
-		await interaction.reply({
-			content: `You voted for quote ${quoteNumber}! Check back tomorrow (EST) for the results. And come back tomorrow to vote again on a new set of quotes!`,
-			ephemeral: true
-		});
-	} else if (interaction.customId === "button_id") {
+    } else if (interaction.customId === "follow_up_questions") {
+      await interaction.deferReply({
+        ephemeral: true,
+      });
+      // use complete to generate three follow up questions based on the interaction.message.content
+      // user then sees three questions
+      // they can click buttons 1, 2, 3 for a quos on that question
+
+      // todo make it work for all three questions not just the first one
+	  // todo respond in thread to follow up follow ups
+	  // todo why do some interactions fail randomly? collector? length of text?
+
+      const followUpQuestions = await complete(
+        `What are three follow up questions to this quote? These questions should all be unique, simple conceptually and very different from one another. One question for each of the following (if applicable): people places and things.\n\n${interaction.message.content
+          .replace(/\[(.*?)\]\((.*?)\)/g, "$1")
+          .replace(/\(\*\*affiliate link\*\*\)/g, "")}`,
+		  "gpt-3.5-turbo"
+      );
+      const followUpQuestionsArray = followUpQuestions.split("\n");
+      const followUpQuestionsArrayTrimmed = followUpQuestionsArray.map((q) =>
+        q.trim()
+      );
+      const followUpQuestionsArrayFiltered =
+        followUpQuestionsArrayTrimmed.filter((q) => q !== "");
+      const followUpQuestionsArrayFilteredUnique = [
+        ...new Set(followUpQuestionsArrayFiltered),
+      ];
+      const followUpQuestionsArrayFilteredUniqueThree =
+        followUpQuestionsArrayFilteredUnique
+          .slice(0, 3)
+      console.log(followUpQuestionsArrayFilteredUniqueThree);
+      const followUpQuestionsArrayFilteredUniqueThreeString =
+        followUpQuestionsArrayFilteredUniqueThree.join("\n");
+
+      const btn_question_one = new ButtonBuilder()
+        .setCustomId("btn_question_one")
+        .setLabel("1")
+        .setStyle(ButtonStyle.Primary);
+
+      const btn_question_two = new ButtonBuilder()
+        .setCustomId("btn_question_two")
+        .setLabel("2")
+        .setStyle(ButtonStyle.Primary);
+
+      const btn_question_three = new ButtonBuilder()
+        .setCustomId("btn_question_three")
+        .setLabel("3")
+        .setStyle(ButtonStyle.Primary);
+
+      const row = new ActionRowBuilder().addComponents(
+        btn_question_one,
+        btn_question_two,
+        btn_question_three
+      );
+
+      await interaction.followUp({
+        content: followUpQuestionsArrayFilteredUniqueThreeString,
+        components: [row],
+        ephemeral: true,
+      });
+
+      const collectorFilter = (i) => {
+        return i.user.id === interaction.user.id;
+      };
+
+      const collector = interaction.channel.createMessageComponentCollector({
+        filter: collectorFilter,
+        time: 60000,
+      });
+
+      collector.on("collect", async (i) => {
+        if (i.customId === "btn_question_one") {
+          console.log(i);
+          await i.deferReply();
+
+		  
+          const quos = await quosLogic(
+            followUpQuestionsArrayFilteredUniqueThree[0]
+          );
+          const quotes = quos
+            .filter((q) => q.text.length < 2000)
+            .filter((q) => {
+				console.log("debug");
+				console.log(q.text);
+				console.log(interaction.message.content);
+              return !interaction.message.content.includes(q.text);
+            })
+            .map(
+              (q) =>
+                `> ${q.text}\n\n-- ${
+                  lookupBook(q.title)
+                    ? `[${q.title} (**affiliate link**)](${lookupBook(
+                        q.title
+                      )})`
+                    : q.title
+                }\n\n`
+            );
+
+          const thread = await i.channel.threads.create({
+            name:
+              followUpQuestionsArrayFilteredUniqueThree[0]
+			  .replace(/^\d+\.\s/, "")
+			  .slice(0, 50) + "...",
+            autoArchiveDuration: 60,
+            startMessage: i.channel.lastMessage,
+            type: ChannelType.GUILD_PUBLIC_THREAD,
+            reason: "Sending quotes as separate messages in one thread",
+          });
+          for (const quote of quotes) {
+            await thread.send({
+              content: quote,
+              components: [],
+            });
+          }
+          await i.editReply(`Results: ${quotes.length} quotes`);
+        }
+        if (i.customId === "btn_question_two") {
+          await i.deferReply();
+          const quos = await quosLogic(
+            followUpQuestionsArrayFilteredUniqueThree[1]
+          );
+          await i.followUp(quos);
+        }
+        if (i.customId === "btn_question_three") {
+          await i.deferReply();
+          const quos = await quosLogic(
+            followUpQuestionsArrayFilteredUniqueThree[2]
+          );
+          await i.followUp(quos);
+        }
+      });
+    } else if (interaction.customId.includes("qroyale__quote_")) {
+      // on button click show ephhemeral message thanking user for voting
+      // if user has already voted, show ephemeral message saying they can only vote once per day
+      // await interaction.deferReply();
+      const buttonId = interaction.customId;
+      const quoteNumber = Number(buttonId.split("qroyale__quote_")[1]);
+      console.log(`Quote number: ${quoteNumber}`);
+      const quotesVotes = JSON.parse(fs.readFileSync("./quotes-votes.json"));
+      const userId = interaction.user.id;
+      // { quotes: quotes, votes: [0,0,0,0,0], voters: [] }
+      const voters = quotesVotes.voters;
+      if (voters.includes(userId)) {
+        await interaction.reply({
+          content: `You have already voted today! Check back tomorrow (EST) for the results. And come back tomorrow to vote again on a new set of quotes!`,
+          ephemeral: true,
+        });
+        return;
+      }
+      quotesVotes.votes[quoteNumber - 1] =
+        quotesVotes.votes[quoteNumber - 1] + 1;
+      quotesVotes.voters.push(userId);
+      fs.writeFileSync(
+        "./quotes-votes.json",
+        JSON.stringify(quotesVotes, null, 2)
+      );
+      await interaction.reply({
+        content: `You voted for quote ${quoteNumber}! Check back tomorrow (EST) for the results. And come back tomorrow to vote again on a new set of quotes!`,
+        ephemeral: true,
+      });
+    } else if (interaction.customId === "button_id") {
       await interaction.deferReply();
       await preWorkflow(interaction);
       const { prompt, imageUrl } = await main(interaction.message.content);
@@ -420,59 +556,59 @@ client.on(Events.InteractionCreate, async (interaction) => {
 	  */
 
       // use complete function to match the prompt to a channel
-    //   const channelTags = await complete(
-    //     `Which of these channels tags matches this message content the most? Just return the channel name. Message: ${
-    //       interaction.message.content
-    //     } Channels: ${channels
-    //       .map((c) => c.name + " : [" + c.tags.join(" ") + "]")
-    //       .join("\n")}`
-    //   );
-	  const channel = await complete(
-        `Which of these channels descriptions matches this book quote the most?  The descriptions are from the 2011 Dewey Decimal Classification system. Just return the channel name, say nothing else. Quote: ${
-          interaction.message.content.replace(/\[(.*?)\]\((.*?)\)/g, "$1").replace(/\(\*\*affiliate link\*\*\)/g, "")
-        } Channels:\n\n${channels
+      //   const channelTags = await complete(
+      //     `Which of these channels tags matches this message content the most? Just return the channel name. Message: ${
+      //       interaction.message.content
+      //     } Channels: ${channels
+      //       .map((c) => c.name + " : [" + c.tags.join(" ") + "]")
+      //       .join("\n")}`
+      //   );
+      const channel = await complete(
+        `Which of these channels descriptions matches this book quote the most?  The descriptions are from the 2011 Dewey Decimal Classification system. Just return the channel name, say nothing else. Quote: ${interaction.message.content
+          .replace(/\[(.*?)\]\((.*?)\)/g, "$1")
+          .replace(/\(\*\*affiliate link\*\*\)/g, "")} Channels:\n\n${channels
           .map((c) => c.name + " : " + c.description)
-          .join("\n\n")}`, "gpt-3.5-turbo"
+          .join("\n\n")}`,
+        "gpt-3.5-turbo"
       );
-	//   console.log(`Which of these channels descriptions matches this book quote the most? Just return the channel name. Quote: ${
-	// 	interaction.message.content.replace(/\[(.*?)\]\((.*?)\)/g, "$1").replace(/\(\*\*affiliate link\*\*\)/g, "")
-	//   } Channels:\n\n${channels
-	// 	.map((c) => c.name + " : " + c.description)
-	// 	.join("\n\n")}`)
-    //   console.log(channel); // 200-religion : [religion faith spirituality theology]
+      //   console.log(`Which of these channels descriptions matches this book quote the most? Just return the channel name. Quote: ${
+      // 	interaction.message.content.replace(/\[(.*?)\]\((.*?)\)/g, "$1").replace(/\(\*\*affiliate link\*\*\)/g, "")
+      //   } Channels:\n\n${channels
+      // 	.map((c) => c.name + " : " + c.description)
+      // 	.join("\n\n")}`)
+      //   console.log(channel); // 200-religion : [religion faith spirituality theology]
       const channelName = channel.split(" : ")[0];
       const targetChannelId = channels.find((c) => c.name === channelName).id;
 
       const targetChannel = await client.channels.fetch(targetChannelId);
 
-   
-	  // create new components without the repost button
-	  const makeAart = new ButtonBuilder()
-	  		.setCustomId("button_id")
-			.setLabel("aart")
-			.setStyle(ButtonStyle.Primary);
+      // create new components without the repost button
+      const makeAart = new ButtonBuilder()
+        .setCustomId("button_id")
+        .setLabel("aart")
+        .setStyle(ButtonStyle.Primary);
 
-	const learnMore = new ButtonBuilder()
-			.setCustomId("quos_learn_more")
-			.setLabel("delve")
-			.setStyle(ButtonStyle.Primary);
+      const learnMore = new ButtonBuilder()
+        .setCustomId("quos_learn_more")
+        .setLabel("delve")
+        .setStyle(ButtonStyle.Primary);
 
-	const summarize = new ButtonBuilder()
-			.setCustomId("summarize")
-			.setLabel("tldr")
-			.setStyle(ButtonStyle.Primary);
+      const summarize = new ButtonBuilder()
+        .setCustomId("summarize")
+        .setLabel("tldr")
+        .setStyle(ButtonStyle.Primary);
 
-	const share = new ButtonBuilder()
-			.setCustomId("share")
-			.setLabel("share")
-			.setStyle(ButtonStyle.Primary);
+      const share = new ButtonBuilder()
+        .setCustomId("share")
+        .setLabel("share")
+        .setStyle(ButtonStyle.Primary);
 
-	const row = new ActionRowBuilder().addComponents(
-			makeAart,
-			learnMore,
-			summarize,
-			share
-		);
+      const row = new ActionRowBuilder().addComponents(
+        makeAart,
+        learnMore,
+        summarize,
+        share
+      );
 
       const newMsg = await targetChannel.send({
         content: interaction.message.content,
