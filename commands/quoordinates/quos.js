@@ -31,12 +31,16 @@ export const data = new SlashCommandBuilder()
   .addStringOption((option) =>
     option
       .setName("input")
-      .setDescription("your search query -- if you don't know what to search, try the `/duel` command")
+      .setDescription(
+        "your search query -- if you don't know what to search, try the `/random` command. Max 100 chars."
+      )
       .setRequired(true)
   );
 
 export async function execute(interaction) {
-  await interaction.deferReply();
+  await interaction.deferReply({
+    ephemeral: true,
+  });
 
   if (!(await preWorkflow(interaction))) {
     await interaction.editReply(
@@ -53,13 +57,15 @@ export async function execute(interaction) {
     .map(
       (q) =>
         `> ${q.text}\n\n-- ${
-          lookupBook(q.title) ? `[${q.title} (**affiliate link**)](${lookupBook(q.title)})` : q.title
+          lookupBook(q.title)
+            ? `[${q.title} (**affiliate link**)](${lookupBook(q.title)})`
+            : q.title
         }\n\n`
     )
     .filter((q) => q.length < 2000);
 
   const thread = await interaction.channel.threads.create({
-    name: userInput,
+    name: userInput.slice(0, 50) + "...",
     autoArchiveDuration: 60,
     startMessage: interaction.channel.lastMessage,
     type: ChannelType.GUILD_PUBLIC_THREAD,
@@ -76,17 +82,22 @@ export async function execute(interaction) {
     .setLabel("delve")
     .setStyle(ButtonStyle.Primary);
 
-    const summarize = new ButtonBuilder()
+  const summarize = new ButtonBuilder()
     .setCustomId("summarize")
     .setLabel("tldr")
     .setStyle(ButtonStyle.Primary);
 
-    const share = new ButtonBuilder()
+  const share = new ButtonBuilder()
     .setCustomId("share")
     .setLabel("share")
     .setStyle(ButtonStyle.Primary);
 
-  const row = new ActionRowBuilder().addComponents(makeAart, learnMore, summarize, share);
+  const row = new ActionRowBuilder().addComponents(
+    makeAart,
+    learnMore,
+    summarize,
+    share
+  );
 
   for (const quote of quotes) {
     await thread.send({
@@ -94,6 +105,11 @@ export async function execute(interaction) {
       components: [row],
     });
   }
-  await interaction.editReply(`Results: ${quoordinate.length} quotes`);
+  await interaction.editReply({
+    content: {
+      content: `@${interaction.user.username}, here's a thread with quotes that might help you answer your question: ${thread.url}`,
+    },
+    ephemeral: true,
+  });
   await invocationWorkflow(interaction);
 }

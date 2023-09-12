@@ -43,6 +43,11 @@ client.on("ready", () => {
     async () => {
       console.log("You will see this message every hour");
       const random = await randomExport();
+
+	  while (random.text.length > 2000) {
+		random = await randomExport();
+	  }
+
       const channel = await client.channels.fetch(channelId);
 
       const makeAart = new ButtonBuilder()
