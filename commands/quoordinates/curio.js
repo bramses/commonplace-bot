@@ -9,7 +9,7 @@ import { lookupBook } from "../../books.js";
 import { randomExport } from "../quoordinates/random.js";
 import { complete } from "../../openai_helper.js";
 import { quosLogic } from "./quos.js";
-import { invocationWorkflow } from "../../invocation.js";
+import { invocationWorkflow, preWorkflow } from "../../invocation.js";
 
 const curioCommand = new SlashCommandBuilder()
   .setName("curio")
@@ -18,6 +18,7 @@ const curioCommand = new SlashCommandBuilder()
 export const data = curioCommand;
 
 export async function execute(interaction) {
+  await preWorkflow(interaction);
   // get three random quotes
   // ask user which one they like best
   // show them the quote they picked
@@ -35,6 +36,8 @@ export async function execute(interaction) {
     threeQuotes.push(random);
   }
 
+  console.log(threeQuotes);
+
   // use openai to generate a question about each quote
   const questions = [];
   for (const quote of threeQuotes) {
@@ -47,6 +50,8 @@ export async function execute(interaction) {
       quote,
     });
   }
+
+  console.log(questions);
 
   // ask user which quote they like best
   const row = new ActionRowBuilder().addComponents(
@@ -109,13 +114,12 @@ export async function execute(interaction) {
       const thread = await i.channel.threads.create({
         name: question.question.slice(0, 50) + "...",
         autoArchiveDuration: 60,
-        startMessage: i.channel.lastMessage,
         type: ChannelType.GUILD_PUBLIC_THREAD,
         reason: "Sending quotes as separate messages in one thread",
       });
 
       const makeAart = new ButtonBuilder()
-        .setCustomId("button_id")
+        .setCustomId("aart_btn")
         .setLabel("aart")
         .setStyle(ButtonStyle.Primary);
 
@@ -148,14 +152,15 @@ export async function execute(interaction) {
         });
       }
       // link to thread
-      await i.editReply(
-        {
-            content: `@${i.user.username}, here's a thread with quotes that might help you answer your question: ${thread.url}`,
-        }
-      );
+      await i.editReply({
+        content: `@${i.user.username}, here's a thread with quotes that might help you answer your question: ${thread.url}`,
+      });
       // await invocationWorkflow(i);
 
       collector.stop();
+
+      interaction.commandName = "curio";
+        await invocationWorkflow(interaction);
     }
   });
 }

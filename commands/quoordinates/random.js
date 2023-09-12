@@ -6,6 +6,7 @@ import {
 } from "discord.js";
 import config from "../../config.json" assert { "type": "json" };
 import { lookupBook } from "../../books.js";
+import { preWorkflow, invocationWorkflow } from "../../invocation.js";
 
 const { quoordinates_server_random } = config;
 
@@ -25,6 +26,7 @@ const randomCommand = new SlashCommandBuilder()
 export const data = randomCommand;
 
 export async function execute(interaction) {
+  await preWorkflow(interaction);
   try {
     const random = await randomExport();
 
@@ -36,7 +38,7 @@ export async function execute(interaction) {
     console.log(JSON.stringify(random, null, 2));
 
     //   const makeAart = new ButtonBuilder()
-    //     .setCustomId("button_id")
+    //     .setCustomId("aart_btn")
     //     .setLabel("aart")
     //     .setStyle(ButtonStyle.Primary);
 
@@ -81,6 +83,9 @@ export async function execute(interaction) {
       } (**affiliate link**)](${lookupBook(random.book.title)})`,
       components: [row],
     });
+
+    interaction.commandName = "random";
+    await invocationWorkflow(interaction);
   } catch (err) {
     await interaction.reply({
       content: `Something went wrong: ${err}`,

@@ -129,7 +129,7 @@ export async function execute(interaction) {
       });
 
       const makeAart = new ButtonBuilder()
-        .setCustomId("button_id")
+        .setCustomId("aart_btn")
         .setLabel("aart")
         .setStyle(ButtonStyle.Primary);
 

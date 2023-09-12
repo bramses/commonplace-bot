@@ -37,9 +37,9 @@ import config from "./config.json" assert { "type": "json" };
 
 client.on("ready", () => {
   console.log(`Logged in as ${client.user.tag}!`);
-  const channelId = "1144620340509675541"; // replace with your channel ID
+  const channelId = "1151221056951038025"; // replace with your channel ID
   const job = new CronJob(
-    "*/60 * * * *",
+    "*/10 * * * *",
     async () => {
       console.log("You will see this message every hour");
       const random = await randomExport();
@@ -50,38 +50,40 @@ client.on("ready", () => {
 
       const channel = await client.channels.fetch(channelId);
 
-      const makeAart = new ButtonBuilder()
-        .setCustomId("button_id")
-        .setLabel("aart")
-        .setStyle(ButtonStyle.Primary);
+	  const repost = new ButtonBuilder()
+      .setCustomId("repost")
+      .setLabel("new-home")
+      .setStyle(ButtonStyle.Primary);
 
-      const learnMore = new ButtonBuilder()
-        .setCustomId("quos_learn_more")
-        .setLabel("delve")
-        .setStyle(ButtonStyle.Primary);
+    //   const makeAart = new ButtonBuilder()
+    //     .setCustomId("aart_btn")
+    //     .setLabel("aart")
+    //     .setStyle(ButtonStyle.Primary);
 
-      const summarize = new ButtonBuilder()
-        .setCustomId("summarize")
-        .setLabel("tldr")
-        .setStyle(ButtonStyle.Primary);
+    //   const learnMore = new ButtonBuilder()
+    //     .setCustomId("quos_learn_more")
+    //     .setLabel("delve")
+    //     .setStyle(ButtonStyle.Primary);
 
-      const share = new ButtonBuilder()
-        .setCustomId("share")
-        .setLabel("share")
-        .setStyle(ButtonStyle.Primary);
+    //   const summarize = new ButtonBuilder()
+    //     .setCustomId("summarize")
+    //     .setLabel("tldr")
+    //     .setStyle(ButtonStyle.Primary);
+
+    //   const share = new ButtonBuilder()
+    //     .setCustomId("share")
+    //     .setLabel("share")
+    //     .setStyle(ButtonStyle.Primary);
 
       const row = new ActionRowBuilder().addComponents(
-        makeAart,
-        learnMore,
-        summarize,
-        share
+        repost
       );
 
       await channel.send({
         content: `> ${random.text}\n\n-- [${
           random.book.title
         } (**affiliate link**)](${lookupBook(random.book.title)})`,
-        components: [row],
+        components: [],
       });
     },
     null,
@@ -304,7 +306,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
         }
       });
     } else if (interaction.customId.includes("qroyale__quote_")) {
-      // on button click show ephhemeral message thanking user for voting
+      // on button click show ephemeral message thanking user for voting
       // if user has already voted, show ephemeral message saying they can only vote once per day
       // await interaction.deferReply();
       const buttonId = interaction.customId;
@@ -332,7 +334,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
         content: `You voted for quote ${quoteNumber}! Check back tomorrow (EST) for the results. And come back tomorrow to vote again on a new set of quotes!`,
         ephemeral: true,
       });
-    } else if (interaction.customId === "button_id") {
+    } else if (interaction.customId === "aart_btn") {
       await interaction.deferReply();
       await preWorkflow(interaction);
       const { prompt, imageUrl } = await main(interaction.message.content);
@@ -400,6 +402,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
       await invocationWorkflow(interaction, true);
     } else if (interaction.customId === "repost") {
       await interaction.deferReply();
+	  await preWorkflow(interaction);
       const channels = [
         {
           name: "00-cs-info",
@@ -589,7 +592,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
       // create new components without the repost button
       const makeAart = new ButtonBuilder()
-        .setCustomId("button_id")
+        .setCustomId("aart_btn")
         .setLabel("aart")
         .setStyle(ButtonStyle.Primary);
 
@@ -627,13 +630,16 @@ client.on(Events.InteractionCreate, async (interaction) => {
         content: `Moved to https://discord.com/channels/${interaction.guildId}/${targetChannelId}/${newMsg.id}`,
         ephemeral: true,
       });
+
+	  interaction.commandName = "repost";
+	  await invocationWorkflow(interaction, true);
     } else if (interaction.customId === "quos_learn_more") {
       await interaction.deferReply();
       await preWorkflow(interaction);
       const similarQuos = await quosLogic(interaction.message.content);
 
       const makeAart = new ButtonBuilder()
-        .setCustomId("button_id")
+        .setCustomId("aart_btn")
         .setLabel("aart")
         .setStyle(ButtonStyle.Primary);
 
@@ -703,7 +709,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
             }
           }
 
-          interaction.commandName = "quos";
+          interaction.commandName = "delve";
           await invocationWorkflow(interaction, true);
         } else {
           console.log("The channel with the provided ID is not a thread.");
@@ -750,11 +756,10 @@ client.on(Events.InteractionCreate, async (interaction) => {
               });
             }
           }
-
-          interaction.commandName = "quos";
         } else {
-          console.log("Tin the reply or defer");
+          console.log("in the reply or defer");
         }
+		interaction.commandName = "delve";
         await invocationWorkflow(interaction, true);
       }
     }
