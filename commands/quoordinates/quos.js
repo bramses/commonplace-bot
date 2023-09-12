@@ -105,11 +105,15 @@ export async function execute(interaction) {
       components: [row],
     });
   }
-  await interaction.editReply({
-    content: {
+
+  try {
+    await interaction.editReply({
       content: `@${interaction.user.username}, here's a thread with quotes that might help you answer your question: ${thread.url}`,
-    },
-    ephemeral: true,
-  });
+      ephemeral: true,
+    });
+  } catch (err) {
+    console.log(err);
+  }
+
   await invocationWorkflow(interaction);
 }

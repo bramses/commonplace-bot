@@ -12,6 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "bad-words": "^3.0.4",
     "cron": "^2.4.3",
     "discord.js": "^14.13.0",
     "node-fetch": "^3.3.2",

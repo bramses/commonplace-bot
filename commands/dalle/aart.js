@@ -2,13 +2,18 @@ import OpenAI from "openai";
 import config from '../../config.json' assert { "type": "json" };
 import { SlashCommandBuilder } from 'discord.js';
 import { invocationWorkflow, preWorkflow } from '../../invocation.js';
+import Filter from 'bad-words';
 
 const  { OPENAI_API_KEY } = config;
 
 const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
 
+const filter = new Filter();
+
 async function complete(text) {
-  // console.log(`Summarizing: ${text}`);
+
+  text = filter.clean(text);
+
   const completion = await openai.chat.completions.create({
     messages: [
       {
