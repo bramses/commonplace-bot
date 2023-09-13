@@ -11,12 +11,21 @@ import { preWorkflow, invocationWorkflow } from "../../invocation.js";
 const { quoordinates_server_random } = config;
 
 export async function randomExport() {
-  const response = await fetch(quoordinates_server_random, {
-    method: "GET",
-  });
-  const json = await response.json();
+  try {
+    const response = await fetch(quoordinates_server_random, {
+      method: "GET",
+    });
+    const json = await response.json();
 
-  return json[0];
+    return json[0];
+  } catch (err) {
+    console.log(err);
+
+    return {
+      text: "Something went wrong. Please try again.",
+      book: null,
+    };
+  }
 }
 
 const randomCommand = new SlashCommandBuilder()
@@ -68,12 +77,17 @@ export async function execute(interaction) {
       .setLabel("follow-up")
       .setStyle(ButtonStyle.Primary);
 
+    const cloze = new ButtonBuilder()
+      .setCustomId("cloze_deletion")
+      .setLabel("cloze")
+      .setStyle(ButtonStyle.Primary);
+
     const row = new ActionRowBuilder().addComponents(
       repost,
       learnMore,
       summarize,
       share,
-      followUpQuestions
+      cloze
     );
 
     // \n\n[cover](${random.book.cover_image_url})

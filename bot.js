@@ -20,6 +20,7 @@ import { invocationWorkflow, preWorkflow } from "./invocation.js";
 import { quosLogic } from "./commands/quoordinates/quos.js";
 import { lookupBook } from "./books.js";
 import { complete } from "./openai_helper.js";
+import { generateClozeDeletion } from "./anki.js"
 
 import { CronJob } from "cron";
 import { randomExport } from "./commands/quoordinates/random.js";
@@ -39,7 +40,7 @@ client.on("ready", () => {
   console.log(`Logged in as ${client.user.tag}!`);
   const channelId = "1151221056951038025"; // replace with your channel ID
   const job = new CronJob(
-    "*/10 * * * *",
+    "*/20 * * * *",
     async () => {
       console.log("You will see this message every hour");
       const random = await randomExport();
@@ -50,10 +51,10 @@ client.on("ready", () => {
 
       const channel = await client.channels.fetch(channelId);
 
-	  const repost = new ButtonBuilder()
-      .setCustomId("repost")
-      .setLabel("new-home")
-      .setStyle(ButtonStyle.Primary);
+	//   const repost = new ButtonBuilder()
+    //   .setCustomId("repost")
+    //   .setLabel("new-home")
+    //   .setStyle(ButtonStyle.Primary);
 
     //   const makeAart = new ButtonBuilder()
     //     .setCustomId("aart_btn")
@@ -65,25 +66,26 @@ client.on("ready", () => {
     //     .setLabel("delve")
     //     .setStyle(ButtonStyle.Primary);
 
-    //   const summarize = new ButtonBuilder()
-    //     .setCustomId("summarize")
-    //     .setLabel("tldr")
-    //     .setStyle(ButtonStyle.Primary);
+      const summarize = new ButtonBuilder()
+        .setCustomId("summarize")
+        .setLabel("tldr")
+        .setStyle(ButtonStyle.Primary);
 
-    //   const share = new ButtonBuilder()
-    //     .setCustomId("share")
-    //     .setLabel("share")
-    //     .setStyle(ButtonStyle.Primary);
+      const share = new ButtonBuilder()
+        .setCustomId("share")
+        .setLabel("share")
+        .setStyle(ButtonStyle.Primary);
 
       const row = new ActionRowBuilder().addComponents(
-        repost
+		summarize,
+        share
       );
 
       await channel.send({
         content: `> ${random.text}\n\n-- [${
           random.book.title
         } (**affiliate link**)](${lookupBook(random.book.title)})`,
-        components: [],
+        components: [row],
       });
     },
     null,
@@ -400,8 +402,35 @@ client.on(Events.InteractionCreate, async (interaction) => {
       }
       interaction.commandName = "share";
       await invocationWorkflow(interaction, true);
-    } else if (interaction.customId === "repost") {
-      await interaction.deferReply();
+    } else if (interaction.customId === "cloze_deletion") {
+		await preWorkflow(interaction);
+		await interaction.deferReply({
+			ephemeral: true,
+		});
+
+		console.log(interaction.message.content)
+
+		const text = interaction.message.content
+			.replace(/\[(.*?)\]\((.*?)\)/g, "$1")
+			.replace(/\(\*\*affiliate link\*\*\)/g, "")
+			.replace(/^>/, "")
+			.trim();
+
+
+		const cloze = await generateClozeDeletion(text);
+
+		await interaction.followUp({
+			content: cloze,
+			ephemeral: false
+		});
+
+		interaction.commandName = "cloze_deletion";
+		await invocationWorkflow(interaction, true);
+
+	}else if (interaction.customId === "repost") {
+      await interaction.deferReply({
+		ephemeral: true,
+	  });
 	  await preWorkflow(interaction);
       const channels = [
         {
