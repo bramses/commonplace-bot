@@ -46,7 +46,7 @@ On the other end of the spectrum, you have services like Google that serve as a 
 
 #### Computer Science
 
-While libraries have been around for centuries, computer science is a much newer field. Computer science is a field that is only a few decades old, and is still in its infancy, but is directly related to the tradition of books and libraries. Why? Computer science is the study of information, and how to manipulate it. 
+While libraries have been around for centuries, computer science is a much newer field. Computer science is a field that is only a few decades old, and is still in its infancy, but is directly related to the tradition of books and libraries. Why? Computer science is the study of information, and how to manipulate it. This is quite convenient, because books are a form of information, and libraries are a form of information storage!
 
 Computer Science has come up with interesting data structures such as trees, hash tables, etc. that has created novel ways to conduct information retrieval and manipulation. Certain algorithms could only be "unlocked" by the existence of modern computation. These revelations have led to file transfers, the Internet, programming languages and their programs through symbolic translation, and data being treated as a brand new category of value. As of yet, these data structures and algorithms have not been applied to the field of books and libraries, outside of retrieval.
 
@@ -67,6 +67,7 @@ Modern LLMs have constraints: hallucinations and context windows. Hallucinations
 Why quotes?
 
 - Quotes are short and informationally extremely dense
+- Quotes/highlights are chosen manually by the reader, creating a curation effort implicitly
 - Quotes are generally isolated from their context (the book they came from)
 - Hallucinations are minimized due to there beingh a strong source seed
 
@@ -108,9 +109,22 @@ Above in the reading section we discussed the importance of being able to have c
 
 ...
 
+### Channels
+
+#### quote-royale
+
+...
+#### feed
+
+...
+
 ## Usage
 
 Join the Discord server to try it out!
+
+## Example from `curio` to `share`
+
+Let's look at an end to end example of how Bramdroid can be used to learn new knowledge and share it.
 
 ## Invocation Limits
 
@@ -120,6 +134,8 @@ See invocation limits [here](https://www.bramadams.dev/discord/#limits)
 Bramdroid is pretty bespoke, and is unlikely to be useful to anyone else due to its specificity.
 
 However, there are some tactics that can be used to inspire your own bots of a similar caliber.
+
+I won't be discussing how the quotes get into the database, that is discussed on the backend server GiHub repo for Quoordinates.
 
 ### OpenAI + Discord
 
