@@ -4,9 +4,9 @@
 
 Books are an amazing technology. By far, books rank amongst the best inventions humanity has ever managed. Countless readers and writers have been directly benefited by the existence of books over the millennia. Books have offered wisdom, solace, knowledge and experience that continues to be unrivaled by much newer technologies up to and including the Internet. It is due to the veracity of books' value, that the *technology* that is books is roughly the same as it was 500 years ago.
 
-Bramdroid is the first of its kind experience to show what books can be when computational power is added to the technology. Bramdroid is a Discord bot that allows you to interact with books in a way that was never before possible.
+Must this be the case? How can we add the newest technologies of computation without cheapening the experience of reading? How can we modernize books without losing the value that they have offered for so long?
 
-But first, let's talk about the current landscape of reading and computation.
+To answer these questions, we need to talk about the current landscape of reading and computation.
 
 ### The Landscapes
 
@@ -36,8 +36,25 @@ Now let's level up from a single book to the entire library.
 
 #### Libraries
 
+Libraries serve first and foremost as a database of sorts. A collection of books whether it be on a bookshelf in the garage or the NYPL have the same two or three functions:
+- Store books for later use
+- Allow readers to find books for immediate use
 
+ Each library, intentionally or unintentionally, applies their own curation efforts in the effort of the two functions above. These curation efforts are implicit (books not featured on the library shelves due to lack of space) or explicit (books that are featured on the library shelves due to the librarian's recommendation). The curation efforts of libraries are a huge part of their value. These curation efforts of libraries are what make them more valuable than a simple database of all books, as they increase the overall quality of what is on offer.
 
+On the other end of the spectrum, you have services like Google that serve as a psuedo library of sorts. Google is a database of all books (all information , really), but it is not curated. The information has no context and outside of surfacing with the same PageRank algorithm that Google uses for all of its search results, there is no way to know what information is more relevant to you than others. In other words, Google will eat anything it can crawl, without any care as to why one document may be better than another.
+
+#### Computer Science
+
+While libraries have been around for centuries, computer science is a much newer field. Computer science is a field that is only a few decades old, and is still in its infancy, but is directly related to the tradition of books and libraries. Why? Computer science is the study of information, and how to manipulate it. 
+
+Computer Science has come up with interesting data structures such as trees, hash tables, etc. that has created novel ways to conduct information retrieval and manipulation. Certain algorithms could only be "unlocked" by the existence of modern computation. These revelations have led to file transfers, the Internet, programming languages and their programs through symbolic translation, and data being treated as a brand new category of value. As of yet, these data structures and algorithms have not been applied to the field of books and libraries, outside of retrieval.
+
+Basically, we now have the ability to store and full text search between books at scale, as well as leaving notes that link to images, videos, or whatever else we might imagine. But all of this effort was still largely a manual process done by readers. Until...
+
+#### LLMs
+
+Large Language Models of today are really good at spatial reasoning. They are able to take in a large amount of text, and then generate text that is similar to the text that they were trained on. This is a huge breakthrough in the field of Natural Language Processing, and has led to a lot of interesting applications. However, the most interesting application of LLMs is **not** the ability to generate text that is similar to the text that they were trained on. It is the ability to **understand** the text that they were trained on. This opens up two brand new capabilities that were not possible before: **linking at scale** and **transformation**. Linking at scale is the act of searching an entire latent space for neighbors. These neighbors can be used to create a graph of related information. Transformation is the act of taking a piece of text, and transforming it into something else. This something else can be visual (images, videos, etc.) or textual (a summary, a translation, a poem etc.), or even educational (a quiz, a test, etc.).
 
 ## Features
 
