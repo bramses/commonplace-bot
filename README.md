@@ -123,18 +123,22 @@ Some quotes are too long and you may rightly not want to read them. The `tldr` b
 
 The main transformation of Bramdroid, allows you to (literally) see quotes in a brand new way. Uses the quote as a seed to generate a prompt, and uses that prompt to generate an image. Since each generation is unique, this entails that libraries could effectively moonlight as unique art galleries. 
 
+#### `share`
+
+Share the quote with a image generated from the quote, each unique to the quote. This means that the image is a visual representation of the quote, and is not just a random image that is unrelated to the quote.
+
 ### Channels
 
 #### quote-royale
 
-...
+Quote Royale is a daily competition where members of the server can choose their favorite quote from five random quotes. The quote with the most votes wins, and is added to the winners-circle channel. This is a fun way to get the community involved in the social curation process, and to see what quotes other people find interesting.
 #### feed
 
-...
+The feed is a automatic channel that posts a random quote every hour.
 
 ## Usage
 
-Join the Discord server to try it out!
+Join the Discord server to try it out! When you join, you will be greeted by Bramdroid, and you can start using the commands right away.
 
 ## Example from `curio` to `share`
 
@@ -149,24 +153,24 @@ Bramdroid is pretty bespoke, and is unlikely to be useful to anyone else due to 
 
 However, there are some tactics that can be used to inspire your own bots of a similar caliber.
 
-I won't be discussing how the quotes get into the database, that is discussed on the backend server GiHub repo for Quoordinates.
+I won't be discussing how the quotes get into the database, that is discussed on the backend server GiHub repo for [Quoordinates](https://github.com/bramses/quoordinates).
 
 ### OpenAI + Discord
 
-...
+{UNDER CONSTRUCTION 👷‍♀️}
 
 ### The UX of Button Interactions
 
-...
+{UNDER CONSTRUCTION 👷‍♀️}
 
 ### The UX of Slash Commands
 
-...
+{UNDER CONSTRUCTION 👷‍♀️}
 
 ### Managing User Invocations
 
-...
+{UNDER CONSTRUCTION 👷‍♀️}
 
 ### Speed and Performance
 
-...
+{UNDER CONSTRUCTION 👷‍♀️}
