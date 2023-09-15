@@ -54,11 +54,25 @@ Basically, we now have the ability to store and full text search between books a
 
 #### LLMs
 
-Large Language Models of today are really good at spatial reasoning. They are able to take in a large amount of text, and then generate text that is similar to the text that they were trained on. This is a huge breakthrough in the field of Natural Language Processing, and has led to a lot of interesting applications. However, the most interesting application of LLMs is **not** the ability to generate text that is similar to the text that they were trained on. It is the ability to **understand** the text that they were trained on. This opens up two brand new capabilities that were not possible before: **linking at scale** and **transformation**. Linking at scale is the act of searching an entire latent space for neighbors. These neighbors can be used to create a graph of related information. Transformation is the act of taking a piece of text, and transforming it into something else. This something else can be visual (images, videos, etc.) or textual (a summary, a translation, a poem etc.), or even educational (a quiz, a test, etc.).
+Large Language Models of today are really good at spatial reasoning. They are able to take in a large amount of text, and then generate text that is similar to the text that they were trained on. This is a huge breakthrough in the field of Natural Language Processing, and has led to a lot of interesting applications. However, the most interesting application of LLMs is **not** the ability to generate text that is similar to the text that they were trained on. It is the ability to **understand** the text that they were trained on. This opens up two brand new capabilities that were not possible before: **linking at scale** and **transformation**. 
+
+**Linking at scale** is the act of searching an entire latent space for neighbors, by leveraging a technique known as semantic search. These neighbors can be used to create a graph of related information, without having a tradtional "root node" for any unique search, since it is based around matches of probability. 
+
+**Transformation** is the act of taking a piece of text, and transforming it into something else. This something else can be visual (images, videos, etc.) or textual (a summary, a translation, a poem etc.), or even educational (a quiz, a test, etc.).
+
+Modern LLMs have constraints: hallucinations and context windows. Hallucinations are when the LLM generates text that is not related to the text that it was trained on. Context windows are the amount of text that the LLM can take in at once. These constraints are important to understand, because they are the reason why LLMs are not perfect. This leads us to talking about why Bramdroid uses quotes.
+
+### Quotes
+
+Why quotes?
+
+- Quotes are short and informationally extremely dense
+- Quotes are generally isolated from their context (the book they came from)
+- Hallucinations are minimized due to there beingh a strong source seed
 
 ## Features
 
-New features are added all the time as creativity strikes, but here are some of the current features:
+New features are added all the time as creativity strikes and as my reading experience deepens, but here are some of the current features:
 
 ### Slash Commands
 
@@ -84,7 +98,7 @@ Will display a help message with all the commands and their descriptions.
 
 #### `delve`
 
-...
+Above in the reading section we discussed the importance of being able to have complete context to make a good curation choice. The `delve` button interaction allows you to do just that. When you click the `delve` button, Bramdroid will find similar quotes about the same topic, and display them to you. This allows you to make a more informed decision about whether or not you want to add the quote to your collection, as well as see multiple books that may share the same concept. This is akin to a depth-first search of the latent space of the LLM.
 
 #### `tldr`
 
