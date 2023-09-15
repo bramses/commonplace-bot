@@ -19,12 +19,14 @@ import fs from "node:fs";
 
 const createQuoteRoyaleChannel = async (client) => {
   const guild = await client.guilds.fetch("1059980663404646420");
+  const categoryID = "1151964359514411038"
 
   const channel = await guild.channels.create({
     name: `quote-royale-${new Date().toISOString().split("T")[0]}`,
     type: ChannelType.GUILD_TEXT,
     topic: "ONLY ONE QUOTE REIGNS SUPREME.",
     reason: "Quote Royale",
+    parent: categoryID,
   });
   return channel;
 };
@@ -148,7 +150,19 @@ export const quoteRoyale = async (client) => {
   if (winner && channelDate) {
     // post winner in general 1059980664222515273
     const general = await guild.channels.fetch("1059980664222515273");
+    const winnersCircle = await guild.channels.fetch("1151964589102211094");
     await general.send({
+      content: `THE WINNER OF QUOTE ROYALE ${channelDate} IS...\n\n> ${
+        winner.quote.text
+      }\n\n-- [${winner.quote.book.title} (**affiliate link**)](${lookupBook(
+        winner.quote.book.title
+      )}).
+        
+        Vote for your favorite from the next five contenders in Quote Royale! <#${
+            channel.id
+        }>`,
+    });
+    await winnersCircle.send({
       content: `THE WINNER OF QUOTE ROYALE ${channelDate} IS...\n\n> ${
         winner.quote.text
       }\n\n-- [${winner.quote.book.title} (**affiliate link**)](${lookupBook(

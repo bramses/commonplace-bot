@@ -40,10 +40,10 @@ client.on("ready", () => {
   console.log(`Logged in as ${client.user.tag}!`);
   const channelId = "1151221056951038025"; // replace with your channel ID
   const job = new CronJob(
-    "*/20 * * * *",
+    "*/60 * * * *",
     async () => {
       console.log("You will see this message every hour");
-      const random = await randomExport();
+      let random = await randomExport();
 
 	  while (random.text.length > 2000) {
 		random = await randomExport();
@@ -403,12 +403,13 @@ client.on(Events.InteractionCreate, async (interaction) => {
       interaction.commandName = "share";
       await invocationWorkflow(interaction, true);
     } else if (interaction.customId === "cloze_deletion") {
+		interaction.commandName = "cloze_deletion";
 		await preWorkflow(interaction);
 		await interaction.deferReply({
 			ephemeral: true,
 		});
 
-		console.log(interaction.message.content)
+		
 
 		const text = interaction.message.content
 			.replace(/\[(.*?)\]\((.*?)\)/g, "$1")
@@ -419,8 +420,13 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
 		const cloze = await generateClozeDeletion(text);
 
-		await interaction.followUp({
-			content: cloze,
+		await interaction.editReply({
+			content: "done! see quiz below",
+			ephemeral: true,
+		});
+
+		await interaction.channel.send({
+			content: `${cloze}\n\nLink to original message: https://discord.com/channels/${interaction.guildId}/${interaction.channelId}/${interaction.message.id}`,
 			ephemeral: false
 		});
 
@@ -431,6 +437,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
       await interaction.deferReply({
 		ephemeral: true,
 	  });
+	  interaction.commandName = "repost";
 	  await preWorkflow(interaction);
       const channels = [
         {
@@ -651,7 +658,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
         content: interaction.message.content,
         components: [row],
       });
-      interaction.commandName = "repost";
       // delete the original message
       await interaction.message.delete();
       // reply ephemeral with link to reposted message
