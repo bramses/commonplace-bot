@@ -146,6 +146,41 @@ client.on(Events.MessageReactionAdd, async (reaction, user) => {
   }
 });
 
+const MAX_CONCURRENT_CALLS = 1;
+let currentCalls = 0;
+let queue = [];
+
+function updateQueuePositions() {
+  // Iterate over the queue and update each user's position
+  console.log("Updating queue positions");
+  for (let i = 0; i < queue.length; i++) {
+    const { message, interaction } = queue[i];
+    console.log(`Updating position for ${interaction.user.id} at ${i}`);
+    message.edit(
+      `<@${interaction.user.id}>, your request is now #${i + 1} in the queue.`
+    );
+  }
+}
+
+async function processTask(task, user, message, interaction) {
+  console.log("Processing task for user", user);
+  // Simulate an async task with a delay of 2 seconds
+  await task(user, message);
+  currentCalls--;
+  processQueue();
+  updateQueuePositions();
+}
+
+function processQueue() {
+  console.log("Processing queue");
+  console.log("Current calls", currentCalls);
+  while (currentCalls < MAX_CONCURRENT_CALLS && queue.length > 0) {
+    const { task, user, message, interaction } = queue.shift();
+    currentCalls++;
+    processTask(task, user, message, interaction);
+  }
+}
+
 client.on(Events.InteractionCreate, async (interaction) => {
   if (!interaction.isChatInputCommand() && !interaction.isButton()) return;
 
@@ -163,14 +198,41 @@ client.on(Events.InteractionCreate, async (interaction) => {
         });
         return;
       }
-      await interaction.deferReply();
-      // console.log(
-      //   interaction.message.content
-      //     .replace(/\(\*\*affiliate link\*\*\)/g, "")
-      //     .replace(/\[(.*?)\]\((.*?)\)/g, "$1")
-      //     .trim()
-      // );
-      // get text from interaction.message.content and pass it to complete
+
+      const sentMessage = await interaction.reply({
+        content: `<@${interaction.user.id}>, your request has been added to the queue.`,
+        ephemeral: true,
+      });
+
+      queue.push({
+        task: async (user, message) => {
+          // await new Promise((resolve) => setTimeout(resolve, 6000));
+
+          const summary = await complete(
+            `tldr to one or two sentences this:\n${interaction.message.content
+              .replace(/\(\*\*affiliate link\*\*\)/g, "")
+              .replace(/\[(.*?)\]\((.*?)\)/g, "$1")
+              .trim()}`
+          );
+
+          const res = await interaction.followUp(summary);
+          interaction.commandName = "summarize";
+          await invocationWorkflow(interaction, true);
+
+          await message.edit({
+            content: `<@${user}>, your request has been processed! Link: ${res.url}`,
+            ephemeral: true,
+          });
+        },
+        user: interaction.user.id,
+        interaction: interaction,
+        message: sentMessage,
+      });
+
+      processQueue();
+
+      // await interaction.deferReply();
+
       // const summary = await complete(
       //   `tldr to one or two sentences this:\n${interaction.message.content
       //     .replace(/\(\*\*affiliate link\*\*\)/g, "")
@@ -178,52 +240,13 @@ client.on(Events.InteractionCreate, async (interaction) => {
       //     .trim()}`
       // );
 
-      const summaryJSON = await complete(
-        `quote: ${interaction.message.content
-              .replace(/\(\*\*affiliate link\*\*\)/g, "")
-              .replace(/\[(.*?)\]\((.*?)\)/g, "")
-              .trim()}
-
-        you will generate increasingly concise, entity-dense summaries of the above quote. 
-        
-        repeat the following 2 steps 5 times. 
-        
-        step 1. identify 1-3 informative entities (";" delimited) from the quote which are missing from the previously generated summary. 
-        step 2. write a new, denser summary of identical length which covers every entity and detail from the previous summary plus the missing entities. 
-        
-        a missing entity is:
-        - relevant to the main story, 
-        - specific yet concise (5 words or fewer), 
-        - novel (not in the previous summary), 
-        - faithful (present in the quote), 
-        - anywhere (can be located anywhere in the quote).
-        
-        guidelines:
-        
-        - the first summary should be long (4-5 sentences, ~80 words) yet highly non-specific, containing little information beyond the entities marked as missing. use overly verbose language and fillers (e.g., "this quote discusses") to reach ~80 words.
-        - make every word count: rewrite the previous summary to improve flow and make space for additional entities.
-        - make space with fusion, compression, and removal of uninformative phrases like "the quote discusses".
-        - the summaries should become highly dense and concise yet self-contained, i.e., easily understood without the quote. 
-        - missing entities can appear anywhere in the new summary.
-        - never drop entities from the previous summary. if space cannot be made, add fewer new entities. 
-        
-        remember, use the exact same number of words for each summary.
-        answer in json. the json should be a list (length 5) of dictionaries whose keys are "missing_entities" and "denser_summary".
-        \`\`\`
-      `, "gpt-3.5-turbo");
-
-      // extract the summary from the response the last denser_summary key
-      console.log(summaryJSON);
-      const summaryJsonParsed = JSON.parse(summaryJSON);
-      const summary = summaryJsonParsed[summaryJsonParsed.length - 1].denser_summary;
-
-      if (interaction.replied || interaction.deferred) {
-        await interaction.followUp(summary);
-      } else {
-        await interaction.reply(summary);
-      }
-      interaction.commandName = "summarize";
-      await invocationWorkflow(interaction, true);
+      // if (interaction.replied || interaction.deferred) {
+      //   await interaction.followUp(summary);
+      // } else {
+      //   await interaction.reply(summary);
+      // }
+      // interaction.commandName = "summarize";
+      // await invocationWorkflow(interaction, true);
     } else if (interaction.customId === "follow_up_questions") {
       await interaction.deferReply({
         ephemeral: true,
@@ -711,8 +734,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
       interaction.commandName = "repost";
       await invocationWorkflow(interaction, true);
     } else if (interaction.customId === "quos_learn_more") {
-      
-	  interaction.commandName = "delve";
+      interaction.commandName = "delve";
       await preWorkflow(interaction);
       if (!(await preWorkflow(interaction))) {
         await interaction.reply({
@@ -725,7 +747,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
         return;
       }
 
-	  await interaction.deferReply();
+      await interaction.deferReply();
       const similarQuos = await quosLogic(interaction.message.content);
 
       const makeAart = new ButtonBuilder()
@@ -804,42 +826,44 @@ client.on(Events.InteractionCreate, async (interaction) => {
           console.log("The channel with the provided ID is not a thread.");
         }
       } else {
-		// create a new thread and post the quotes there
-		const thread = await interaction.channel.threads.create({
-			name: interaction.message.content.replace(/\[(.*?)\]\((.*?)\)/g, "$1").replace(/\(\*\*affiliate link\*\*\)/g, "").slice(0, 50) + "...",
-			autoArchiveDuration: 60,
-			type: ChannelType.GUILD_PUBLIC_THREAD,
-			reason: "Sending quotes as separate messages in one thread",
-		});
+        // create a new thread and post the quotes there
+        const thread = await interaction.channel.threads.create({
+          name:
+            interaction.message.content
+              .replace(/\[(.*?)\]\((.*?)\)/g, "$1")
+              .replace(/\(\*\*affiliate link\*\*\)/g, "")
+              .slice(0, 50) + "...",
+          autoArchiveDuration: 60,
+          type: ChannelType.GUILD_PUBLIC_THREAD,
+          reason: "Sending quotes as separate messages in one thread",
+        });
 
-		const quotes = similarQuos
-            .filter((q) => {
-              return !interaction.message.content.includes(q.text);
-            })
-            .map(
-              (q) =>
-                `> ${q.text}\n\n-- ${
-                  lookupBook(q.title)
-                    ? `[${q.title} (**affiliate link**)](${lookupBook(
-                        q.title
-                      )})`
-                    : q.title
-                }\n\n`
-            )
-            .filter((q) => q.length < 2000);
-          // append quotes to thread
+        const quotes = similarQuos
+          .filter((q) => {
+            return !interaction.message.content.includes(q.text);
+          })
+          .map(
+            (q) =>
+              `> ${q.text}\n\n-- ${
+                lookupBook(q.title)
+                  ? `[${q.title} (**affiliate link**)](${lookupBook(q.title)})`
+                  : q.title
+              }\n\n`
+          )
+          .filter((q) => q.length < 2000);
+        // append quotes to thread
 
-		for (const quote of quotes) {
-			await thread.send({
-				content: quote,
-				components: [row],
-			});
-		}
+        for (const quote of quotes) {
+          await thread.send({
+            content: quote,
+            components: [row],
+          });
+        }
 
-		await interaction.followUp({
-			content: `Quotes sent to thread: ${thread.url}`,
-			components: [],
-		});
+        await interaction.followUp({
+          content: `Quotes sent to thread: ${thread.url}`,
+          components: [],
+        });
 
         // if (interaction.replied || interaction.deferred) {
         //   // get the last 10 messages in the channel
