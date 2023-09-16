@@ -151,21 +151,72 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
   if (interaction.isButton()) {
     if (interaction.customId === "summarize") {
-      await interaction.deferReply();
+      interaction.commandName = "summarize";
       await preWorkflow(interaction);
-      console.log(
-        interaction.message.content
-          .replace(/\(\*\*affiliate link\*\*\)/g, "")
-          .replace(/\[(.*?)\]\((.*?)\)/g, "$1")
-          .trim()
-      );
+      if (!(await preWorkflow(interaction))) {
+        await interaction.reply({
+          content:
+            "You have reached your monthly limit for this command: " +
+            interaction.commandName +
+            ". You can get more invocations by supporting the project [here](https://www.bramadams.dev/discord/)!",
+          ephemeral: true,
+        });
+        return;
+      }
+      await interaction.deferReply();
+      // console.log(
+      //   interaction.message.content
+      //     .replace(/\(\*\*affiliate link\*\*\)/g, "")
+      //     .replace(/\[(.*?)\]\((.*?)\)/g, "$1")
+      //     .trim()
+      // );
       // get text from interaction.message.content and pass it to complete
-      const summary = await complete(
-        `tldr to one or two sentences this:\n${interaction.message.content
-          .replace(/\(\*\*affiliate link\*\*\)/g, "")
-          .replace(/\[(.*?)\]\((.*?)\)/g, "$1")
-          .trim()}`
-      );
+      // const summary = await complete(
+      //   `tldr to one or two sentences this:\n${interaction.message.content
+      //     .replace(/\(\*\*affiliate link\*\*\)/g, "")
+      //     .replace(/\[(.*?)\]\((.*?)\)/g, "$1")
+      //     .trim()}`
+      // );
+
+      const summaryJSON = await complete(
+        `quote: ${interaction.message.content
+              .replace(/\(\*\*affiliate link\*\*\)/g, "")
+              .replace(/\[(.*?)\]\((.*?)\)/g, "")
+              .trim()}
+
+        you will generate increasingly concise, entity-dense summaries of the above quote. 
+        
+        repeat the following 2 steps 5 times. 
+        
+        step 1. identify 1-3 informative entities (";" delimited) from the quote which are missing from the previously generated summary. 
+        step 2. write a new, denser summary of identical length which covers every entity and detail from the previous summary plus the missing entities. 
+        
+        a missing entity is:
+        - relevant to the main story, 
+        - specific yet concise (5 words or fewer), 
+        - novel (not in the previous summary), 
+        - faithful (present in the quote), 
+        - anywhere (can be located anywhere in the quote).
+        
+        guidelines:
+        
+        - the first summary should be long (4-5 sentences, ~80 words) yet highly non-specific, containing little information beyond the entities marked as missing. use overly verbose language and fillers (e.g., "this quote discusses") to reach ~80 words.
+        - make every word count: rewrite the previous summary to improve flow and make space for additional entities.
+        - make space with fusion, compression, and removal of uninformative phrases like "the quote discusses".
+        - the summaries should become highly dense and concise yet self-contained, i.e., easily understood without the quote. 
+        - missing entities can appear anywhere in the new summary.
+        - never drop entities from the previous summary. if space cannot be made, add fewer new entities. 
+        
+        remember, use the exact same number of words for each summary.
+        answer in json. the json should be a list (length 5) of dictionaries whose keys are "missing_entities" and "denser_summary".
+        \`\`\`
+      `, "gpt-3.5-turbo");
+
+      // extract the summary from the response the last denser_summary key
+      console.log(summaryJSON);
+      const summaryJsonParsed = JSON.parse(summaryJSON);
+      const summary = summaryJsonParsed[summaryJsonParsed.length - 1].denser_summary;
+
       if (interaction.replied || interaction.deferred) {
         await interaction.followUp(summary);
       } else {
