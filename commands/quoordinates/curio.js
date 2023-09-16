@@ -18,7 +18,17 @@ const curioCommand = new SlashCommandBuilder()
 export const data = curioCommand;
 
 export async function execute(interaction) {
+  interaction.commandName = "curio";
   await preWorkflow(interaction);
+  if (!(await preWorkflow(interaction))) {
+    await interaction.reply(
+      {
+        content: "You have reached your monthly limit for this command: " + interaction.commandName + ". You can get more invocations by supporting the project [here](https://www.bramadams.dev/discord/)!",
+        ephemeral: true,
+      }
+    );
+    return;
+  }
   // get three random quotes
   // ask user which one they like best
   // show them the quote they picked
@@ -36,8 +46,6 @@ export async function execute(interaction) {
     threeQuotes.push(random);
   }
 
-  console.log(threeQuotes);
-
   // use openai to generate a question about each quote
   const questions = [];
   for (const quote of threeQuotes) {
@@ -50,9 +58,6 @@ export async function execute(interaction) {
       quote,
     });
   }
-
-  console.log(questions);
-
   // ask user which quote they like best
   const row = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
@@ -77,6 +82,9 @@ export async function execute(interaction) {
     fetchReply: true,
     ephemeral: true,
   });
+
+  interaction.commandName = "curio";
+  await invocationWorkflow(interaction);
 
   const filter = (i) => {
     return i.user.id === interaction.user.id;
@@ -157,10 +165,8 @@ export async function execute(interaction) {
       });
       // await invocationWorkflow(i);
 
-      collector.stop();
-
-      interaction.commandName = "curio";
-        await invocationWorkflow(interaction);
+      interaction.commandName = "quos";
+      await invocationWorkflow(interaction);
     }
   });
 }

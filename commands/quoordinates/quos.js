@@ -46,10 +46,13 @@ export async function execute(interaction) {
 
     interaction.commandName = "quos";
     if (!(await preWorkflow(interaction))) {
-      await interaction.editReply(
-        "You have reached your monthly limit for this command: " +
-          interaction.commandName
-      );
+      await interaction.reply({
+        content:
+          "You have reached your monthly limit for this command: " +
+          interaction.commandName +
+          ". You can get more invocations by supporting the project [here](https://www.bramadams.dev/discord/)!",
+        ephemeral: true,
+      });
       return;
     }
 

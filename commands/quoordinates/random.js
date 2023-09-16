@@ -35,7 +35,17 @@ const randomCommand = new SlashCommandBuilder()
 export const data = randomCommand;
 
 export async function execute(interaction) {
+  interaction.commandName = "random";
   await preWorkflow(interaction);
+  if (!(await preWorkflow(interaction))) {
+    await interaction.reply(
+      {
+        content: "You have reached your monthly limit for this command: " + interaction.commandName + ". You can get more invocations by supporting the project [here](https://www.bramadams.dev/discord/)!",
+        ephemeral: true,
+      }
+    );
+    return;
+  }
   try {
     const random = await randomExport();
 

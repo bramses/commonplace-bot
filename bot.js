@@ -20,7 +20,7 @@ import { invocationWorkflow, preWorkflow } from "./invocation.js";
 import { quosLogic } from "./commands/quoordinates/quos.js";
 import { lookupBook } from "./books.js";
 import { complete } from "./openai_helper.js";
-import { generateClozeDeletion } from "./anki.js"
+import { generateClozeDeletion } from "./anki.js";
 
 import { CronJob } from "cron";
 import { randomExport } from "./commands/quoordinates/random.js";
@@ -45,26 +45,26 @@ client.on("ready", () => {
       console.log("You will see this message every hour");
       let random = await randomExport();
 
-	  while (random.text.length > 2000) {
-		random = await randomExport();
-	  }
+      while (random.text.length > 2000) {
+        random = await randomExport();
+      }
 
       const channel = await client.channels.fetch(channelId);
 
-	//   const repost = new ButtonBuilder()
-    //   .setCustomId("repost")
-    //   .setLabel("new-home")
-    //   .setStyle(ButtonStyle.Primary);
+      //   const repost = new ButtonBuilder()
+      //   .setCustomId("repost")
+      //   .setLabel("new-home")
+      //   .setStyle(ButtonStyle.Primary);
 
-    //   const makeAart = new ButtonBuilder()
-    //     .setCustomId("aart_btn")
-    //     .setLabel("aart")
-    //     .setStyle(ButtonStyle.Primary);
+      //   const makeAart = new ButtonBuilder()
+      //     .setCustomId("aart_btn")
+      //     .setLabel("aart")
+      //     .setStyle(ButtonStyle.Primary);
 
-    //   const learnMore = new ButtonBuilder()
-    //     .setCustomId("quos_learn_more")
-    //     .setLabel("delve")
-    //     .setStyle(ButtonStyle.Primary);
+      //   const learnMore = new ButtonBuilder()
+      //     .setCustomId("quos_learn_more")
+      //     .setLabel("delve")
+      //     .setStyle(ButtonStyle.Primary);
 
       const summarize = new ButtonBuilder()
         .setCustomId("summarize")
@@ -76,10 +76,7 @@ client.on("ready", () => {
         .setLabel("share")
         .setStyle(ButtonStyle.Primary);
 
-      const row = new ActionRowBuilder().addComponents(
-		summarize,
-        share
-      );
+      const row = new ActionRowBuilder().addComponents(summarize, share);
 
       await channel.send({
         content: `> ${random.text}\n\n-- [${
@@ -185,14 +182,14 @@ client.on(Events.InteractionCreate, async (interaction) => {
       // they can click buttons 1, 2, 3 for a quos on that question
 
       // todo make it work for all three questions not just the first one
-	  // todo respond in thread to follow up follow ups
-	  // todo why do some interactions fail randomly? collector? length of text?
+      // todo respond in thread to follow up follow ups
+      // todo why do some interactions fail randomly? collector? length of text?
 
       const followUpQuestions = await complete(
         `What are three follow up questions to this quote? These questions should all be unique, simple conceptually and very different from one another. One question for each of the following (if applicable): people places and things.\n\n${interaction.message.content
           .replace(/\[(.*?)\]\((.*?)\)/g, "$1")
           .replace(/\(\*\*affiliate link\*\*\)/g, "")}`,
-		  "gpt-3.5-turbo"
+        "gpt-3.5-turbo"
       );
       const followUpQuestionsArray = followUpQuestions.split("\n");
       const followUpQuestionsArrayTrimmed = followUpQuestionsArray.map((q) =>
@@ -204,8 +201,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
         ...new Set(followUpQuestionsArrayFiltered),
       ];
       const followUpQuestionsArrayFilteredUniqueThree =
-        followUpQuestionsArrayFilteredUnique
-          .slice(0, 3)
+        followUpQuestionsArrayFilteredUnique.slice(0, 3);
       console.log(followUpQuestionsArrayFilteredUniqueThree);
       const followUpQuestionsArrayFilteredUniqueThreeString =
         followUpQuestionsArrayFilteredUniqueThree.join("\n");
@@ -251,16 +247,15 @@ client.on(Events.InteractionCreate, async (interaction) => {
           console.log(i);
           await i.deferReply();
 
-		  
           const quos = await quosLogic(
             followUpQuestionsArrayFilteredUniqueThree[0]
           );
           const quotes = quos
             .filter((q) => q.text.length < 2000)
             .filter((q) => {
-				console.log("debug");
-				console.log(q.text);
-				console.log(interaction.message.content);
+              console.log("debug");
+              console.log(q.text);
+              console.log(interaction.message.content);
               return !interaction.message.content.includes(q.text);
             })
             .map(
@@ -277,8 +272,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
           const thread = await i.channel.threads.create({
             name:
               followUpQuestionsArrayFilteredUniqueThree[0]
-			  .replace(/^\d+\.\s/, "")
-			  .slice(0, 50) + "...",
+                .replace(/^\d+\.\s/, "")
+                .slice(0, 50) + "...",
             autoArchiveDuration: 60,
             startMessage: i.channel.lastMessage,
             type: ChannelType.GUILD_PUBLIC_THREAD,
@@ -403,42 +398,38 @@ client.on(Events.InteractionCreate, async (interaction) => {
       interaction.commandName = "share";
       await invocationWorkflow(interaction, true);
     } else if (interaction.customId === "cloze_deletion") {
-		interaction.commandName = "cloze_deletion";
-		await preWorkflow(interaction);
-		await interaction.deferReply({
-			ephemeral: true,
-		});
-
-		
-
-		const text = interaction.message.content
-			.replace(/\[(.*?)\]\((.*?)\)/g, "$1")
-			.replace(/\(\*\*affiliate link\*\*\)/g, "")
-			.replace(/^>/, "")
-			.trim();
-
-
-		const cloze = await generateClozeDeletion(text);
-
-		await interaction.editReply({
-			content: "done! see quiz below",
-			ephemeral: true,
-		});
-
-		await interaction.channel.send({
-			content: `${cloze}\n\nLink to original message: https://discord.com/channels/${interaction.guildId}/${interaction.channelId}/${interaction.message.id}`,
-			ephemeral: false
-		});
-
-		interaction.commandName = "cloze_deletion";
-		await invocationWorkflow(interaction, true);
-
-	}else if (interaction.customId === "repost") {
+      interaction.commandName = "cloze_deletion";
+      await preWorkflow(interaction);
       await interaction.deferReply({
-		ephemeral: true,
-	  });
-	  interaction.commandName = "repost";
-	  await preWorkflow(interaction);
+        ephemeral: true,
+      });
+
+      const text = interaction.message.content
+        .replace(/\[(.*?)\]\((.*?)\)/g, "$1")
+        .replace(/\(\*\*affiliate link\*\*\)/g, "")
+        .replace(/^>/, "")
+        .trim();
+
+      const cloze = await generateClozeDeletion(text);
+
+      await interaction.editReply({
+        content: "done! see quiz below",
+        ephemeral: true,
+      });
+
+      await interaction.channel.send({
+        content: `${cloze}\n\nLink to original message: https://discord.com/channels/${interaction.guildId}/${interaction.channelId}/${interaction.message.id}`,
+        ephemeral: false,
+      });
+
+      interaction.commandName = "cloze_deletion";
+      await invocationWorkflow(interaction, true);
+    } else if (interaction.customId === "repost") {
+      await interaction.deferReply({
+        ephemeral: true,
+      });
+      interaction.commandName = "repost";
+      await preWorkflow(interaction);
       const channels = [
         {
           name: "00-cs-info",
@@ -666,11 +657,24 @@ client.on(Events.InteractionCreate, async (interaction) => {
         ephemeral: true,
       });
 
-	  interaction.commandName = "repost";
-	  await invocationWorkflow(interaction, true);
+      interaction.commandName = "repost";
+      await invocationWorkflow(interaction, true);
     } else if (interaction.customId === "quos_learn_more") {
-      await interaction.deferReply();
+      
+	  interaction.commandName = "delve";
       await preWorkflow(interaction);
+      if (!(await preWorkflow(interaction))) {
+        await interaction.reply({
+          content:
+            "You have reached your monthly limit for this command: " +
+            interaction.commandName +
+            ". You can get more invocations by supporting the project [here](https://www.bramadams.dev/discord/)!",
+          ephemeral: true,
+        });
+        return;
+      }
+
+	  await interaction.deferReply();
       const similarQuos = await quosLogic(interaction.message.content);
 
       const makeAart = new ButtonBuilder()
@@ -702,7 +706,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
       // get other messages in current thread
       if (interaction.channel instanceof ThreadChannel) {
-        console.log(`Parent channel ID: ${interaction.channel.id}`);
         const threadId = interaction.channel.id; // replace with your thread ID
         const thread = await client.channels.fetch(threadId);
         if (thread instanceof ThreadChannel) {
@@ -750,20 +753,17 @@ client.on(Events.InteractionCreate, async (interaction) => {
           console.log("The channel with the provided ID is not a thread.");
         }
       } else {
-        if (interaction.replied || interaction.deferred) {
-          // get the last 10 messages in the channel
-          const messages = await interaction.channel.messages.fetch({
-            limit: 10,
-          });
-          const messagesContent = messages.map((m) => m.content);
+		// create a new thread and post the quotes there
+		const thread = await interaction.channel.threads.create({
+			name: interaction.message.content.replace(/\[(.*?)\]\((.*?)\)/g, "$1").replace(/\(\*\*affiliate link\*\*\)/g, "").slice(0, 50) + "...",
+			autoArchiveDuration: 60,
+			type: ChannelType.GUILD_PUBLIC_THREAD,
+			reason: "Sending quotes as separate messages in one thread",
+		});
 
-          const quotes = similarQuos
+		const quotes = similarQuos
             .filter((q) => {
               return !interaction.message.content.includes(q.text);
-            })
-            .filter((q) => {
-              // q.text is the quote should not be in any of the messages from messagesContent
-              return !messagesContent.some((m) => m.includes(q.text));
             })
             .map(
               (q) =>
@@ -778,23 +778,63 @@ client.on(Events.InteractionCreate, async (interaction) => {
             .filter((q) => q.length < 2000);
           // append quotes to thread
 
-          if (quotes.length === 0) {
-            await interaction.followUp({
-              content: "No more quotes found!",
-              components: [],
-            });
-          } else {
-            for (const quote of quotes) {
-              await interaction.followUp({
-                content: quote,
-                components: [row],
-              });
-            }
-          }
-        } else {
-          console.log("in the reply or defer");
-        }
-		interaction.commandName = "delve";
+		for (const quote of quotes) {
+			await thread.send({
+				content: quote,
+				components: [row],
+			});
+		}
+
+		await interaction.followUp({
+			content: `Quotes sent to thread: ${thread.url}`,
+			components: [],
+		});
+
+        // if (interaction.replied || interaction.deferred) {
+        //   // get the last 10 messages in the channel
+        //   const messages = await interaction.channel.messages.fetch({
+        //     limit: 10,
+        //   });
+        //   const messagesContent = messages.map((m) => m.content);
+
+        //   const quotes = similarQuos
+        //     .filter((q) => {
+        //       return !interaction.message.content.includes(q.text);
+        //     })
+        //     .filter((q) => {
+        //       // q.text is the quote should not be in any of the messages from messagesContent
+        //       return !messagesContent.some((m) => m.includes(q.text));
+        //     })
+        //     .map(
+        //       (q) =>
+        //         `> ${q.text}\n\n-- ${
+        //           lookupBook(q.title)
+        //             ? `[${q.title} (**affiliate link**)](${lookupBook(
+        //                 q.title
+        //               )})`
+        //             : q.title
+        //         }\n\n`
+        //     )
+        //     .filter((q) => q.length < 2000);
+        //   // append quotes to thread
+
+        //   if (quotes.length === 0) {
+        //     await interaction.followUp({
+        //       content: "No more quotes found!",
+        //       components: [],
+        //     });
+        //   } else {
+        //     for (const quote of quotes) {
+        //       await interaction.followUp({
+        //         content: quote,
+        //         components: [row],
+        //       });
+        //     }
+        //   }
+        // } else {
+        //   console.log("in the reply or defer");
+        // }
+        interaction.commandName = "delve";
         await invocationWorkflow(interaction, true);
       }
     }

@@ -153,7 +153,7 @@ Bramdroid is pretty bespoke, and is unlikely to be useful to anyone else due to 
 
 However, there are some tactics that can be used to inspire your own bots of a similar caliber.
 
-I won't be discussing how the quotes get into the database, that is discussed on the backend server GiHub repo for [Quoordinates](https://github.com/bramses/quoordinates).
+I won't be discussing how the quotes get into the database, that is discussed on the backend server GiHub repo for [Quoordinates](https://github.com/bramses/quoordinates). The important thing to know about this pipeline is that everytime I highlight a quote on my Kindle, it ends up in Bramdroid's database. Hand-wavey, but there ya go.
 
 ### OpenAI + Discord
 
