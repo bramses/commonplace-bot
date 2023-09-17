@@ -139,9 +139,16 @@ Let pure randomness guide your reading experience. Bramdroid will pick a random 
 
 Power user command to search the database directly for quotes. This is the equivalent of going up to the librarian and asking them to find you a book on a specific topic. Bramdroid will find the quotes that are most similar to the query you give it, and display them to you. This is akin to a breadth-first search of the latent space of the LLM. The matches will rarely be an "exact" match, but this is because the database does not have **all** information, it has **curated** information.
 
+![Screenshot 2023-09-17 19-06-41](https://github.com/bramses/bramdroid/assets/3282661/2a51428d-ef44-4f29-91db-73d001ae7cb8)
+![Screenshot 2023-09-17 19-07-10](https://github.com/bramses/bramdroid/assets/3282661/7eb724ef-33a6-4c63-bf7c-50bd43402c40)
+
+
 #### `/help`
 
 Will display a help message with all the commands and their descriptions.
+
+![Screenshot 2023-09-17 19-05-38](https://github.com/bramses/bramdroid/assets/3282661/8f2b4d47-3108-409d-b314-bc1b912f4394)
+
 
 ### Button Interactions
 
@@ -166,18 +173,34 @@ Some quotes are too long and you may rightly not want to read them. The `tldr` b
 
 The main transformation of Bramdroid, allows you to (literally) see quotes in a brand new way. Uses the quote as a seed to generate a prompt, and uses that prompt to generate an image. Since each generation is unique, this entails that libraries could effectively moonlight as unique art galleries. 
 
+![Screenshot 2023-09-17 19-01-24](https://github.com/bramses/bramdroid/assets/3282661/c320fbc8-bfbb-42a6-a91e-211a568d4dd2)
+![Screenshot 2023-09-17 19-02-31](https://github.com/bramses/bramdroid/assets/3282661/7e60262e-7fe5-4f45-a548-88cf6dfefabc)
+
+
 #### `share`
 
 Share the quote with a image generated from the quote, each unique to the quote. This means that the image is a visual representation of the quote, and is not just a random image that is unrelated to the quote. All of my daily posts have been using the share button interaction. See examples [here](https://www.bramadams.dev/september-16-2023/), [here](https://www.bramadams.dev/september-17-2023/) or [here](https://www.bramadams.dev/september-15-2023/). Also on [Twitter](https://twitter.com/_bramses).
+
+![Screenshot 2023-09-17 19-03-00](https://github.com/bramses/bramdroid/assets/3282661/d8cf765f-cd11-474f-bf4f-f2e20ef069d0)
+![public (100)](https://github.com/bramses/bramdroid/assets/3282661/30823397-1b88-4724-885d-b33156cf3d3a)
+
+
 
 ### Channels
 
 #### quote-royale
 
 Quote Royale is a daily competition where members of the server can choose their favorite quote from five random quotes. The quote with the most votes wins, and is added to the winners-circle channel. This is a fun way to get the community involved in the social curation process, and to see what quotes other people find interesting.
+
+![Screenshot 2023-09-17 19-04-36](https://github.com/bramses/bramdroid/assets/3282661/e0d2d533-7d8a-4fd4-b218-626cc183e240)
+
+
 #### feed
 
 The feed is a automatic channel that posts a random quote every hour.
+
+![Screenshot 2023-09-17 19-04-16](https://github.com/bramses/bramdroid/assets/3282661/1a81475c-9221-4f7c-b155-449013d010d5)
+
 
 ## Usage
 
