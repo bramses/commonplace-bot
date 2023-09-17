@@ -170,7 +170,7 @@ export async function execute(interaction) {
               }
               // link to thread
               await i.editReply({
-                content: `@${i.user.username}, here's a thread with quotes that might help you answer your question: ${thread.url}`,
+                content: `<@${interaction.user.id}>, here's a thread with quotes that might help you answer your question: ${thread.url}`,
               });
               // await invocationWorkflow(i);
               interaction.commandName = "quos";

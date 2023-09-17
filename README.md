@@ -151,7 +151,7 @@ The main transformation of Bramdroid, allows you to (literally) see quotes in a 
 
 #### `share`
 
-Share the quote with a image generated from the quote, each unique to the quote. This means that the image is a visual representation of the quote, and is not just a random image that is unrelated to the quote.
+Share the quote with a image generated from the quote, each unique to the quote. This means that the image is a visual representation of the quote, and is not just a random image that is unrelated to the quote. All of my daily posts have been using the share button interaction. See examples [here](https://www.bramadams.dev/september-16-2023/), [here](https://www.bramadams.dev/september-17-2023/) or [here](https://www.bramadams.dev/september-15-2023/). Also on [Twitter](https://twitter.com/_bramses).
 
 ### Channels
 
