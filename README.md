@@ -123,6 +123,11 @@ New features are added all the time as creativity strikes and as my reading expe
 2. You pick the question that you think is the most interesting and piques your curiosity.
 3. Bramdroid will run the `/quos` command (below) on the question you picked.
 
+![Screenshot 2023-09-17 18-55-21](https://github.com/bramses/bramdroid/assets/3282661/11b70e5d-e7bb-4a3c-8978-1ab574a75641)
+![Screenshot 2023-09-17 18-55-14](https://github.com/bramses/bramdroid/assets/3282661/d8c7e213-d72d-43ce-b583-57837e3b566e)
+![Screenshot 2023-09-17 18-54-29](https://github.com/bramses/bramdroid/assets/3282661/0edf94d7-a91c-426c-874f-0d23efcb759e)
+
+
 #### `/random`
 
 Let pure randomness guide your reading experience. Bramdroid will pick a random quote from the database and display it to you. This is equivalent to picking a random book off of a bookshelf and reading a random page.
