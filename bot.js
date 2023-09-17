@@ -153,7 +153,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
   if (interaction.isButton()) {
     if (interaction.customId === "summarize") {
       interaction.commandName = "summarize";
-      await preWorkflow(interaction);
       if (!(await preWorkflow(interaction))) {
         await interaction.reply({
           content:
@@ -399,44 +398,74 @@ client.on(Events.InteractionCreate, async (interaction) => {
 		}
 		3. get back a url and reply with it
 		*/
-      await interaction.deferReply();
-      await preWorkflow(interaction);
-      let userInput = interaction.message.content.trim();
-      // remove [cover](url) from userInput
-      const regex = /\[cover\]\((.*)\)/;
-      const match = userInput.match(regex);
-      if (match) {
-        userInput = userInput.replace(match[0], "").trim();
-      }
-
-      // remove leading >
-      userInput = userInput.replace(/^>/, "").trim();
-
-      // remove any markdown links
-      userInput = userInput.replace(/\[(.*?)\]\((.*?)\)/g, "$1");
-
-      // remove (**affiliate link**) from userInput
-      userInput = userInput.replace(/\(\*\*affiliate link\*\*\)/g, "").trim();
-
-      // await interaction.followUp("This feature is not yet implemented.");
-
-      const { prompt, imageUrl } = await main(userInput);
-      const response = await fetch(config.quoordinates_server_share, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ text: userInput, url: imageUrl }),
-      });
-      const json = await response.json();
-      console.log(json);
-      const shareUrl = json.result;
-
-      if (interaction.replied || interaction.deferred) {
-        await interaction.followUp(`${shareUrl}`);
-      }
+      // await interaction.deferReply();
       interaction.commandName = "share";
-      await invocationWorkflow(interaction, true);
+      if (!(await preWorkflow(interaction))) {
+        await interaction.reply({
+          content:
+            "You have reached your monthly limit for this command: " +
+            interaction.commandName +
+            ". You can get more invocations by supporting the project [here](https://www.bramadams.dev/discord/)!",
+          ephemeral: true,
+        });
+        return;
+      }
+
+      const sentMessage = await interaction.reply({
+        content: `<@${interaction.user.id}>, your request has been added to the queue.`,
+        ephemeral: true,
+      });
+
+      queue.push({
+        task: async (user, message) => {
+          let userInput = interaction.message.content.trim();
+          // remove [cover](url) from userInput
+          const regex = /\[cover\]\((.*)\)/;
+          const match = userInput.match(regex);
+          if (match) {
+            userInput = userInput.replace(match[0], "").trim();
+          }
+
+          // remove leading >
+          userInput = userInput.replace(/^>/, "").trim();
+
+          // remove any markdown links
+          userInput = userInput.replace(/\[(.*?)\]\((.*?)\)/g, "$1");
+
+          // remove (**affiliate link**) from userInput
+          userInput = userInput
+            .replace(/\(\*\*affiliate link\*\*\)/g, "")
+            .trim();
+
+          // await interaction.followUp("This feature is not yet implemented.");
+
+          const { prompt, imageUrl } = await main(userInput);
+          const response = await fetch(config.quoordinates_server_share, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ text: userInput, url: imageUrl }),
+          });
+          const json = await response.json();
+
+          const shareUrl = json.result;
+          const res = await interaction.followUp(`${shareUrl}`);
+
+          interaction.commandName = "share";
+          await invocationWorkflow(interaction, true);
+
+          await message.edit({
+            content: `<@${user}>, your request has been processed! Link: ${res.url}`,
+            ephemeral: true,
+          });
+        },
+        user: interaction.user.id,
+        interaction: interaction,
+        message: sentMessage,
+      });
+
+      processQueue();
     } else if (interaction.customId === "cloze_deletion") {
       interaction.commandName = "cloze_deletion";
       await preWorkflow(interaction);

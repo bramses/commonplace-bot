@@ -18,7 +18,7 @@ async function complete(text) {
       {
         role: "system",
         content:
-          "Summarize the following into a theme and create an art prompt from the feel of the text aesthetically along the lines of: 'an abstract of [some unique lesser known art style from history] version of {x}' where x is the feel of the text aesthetically. Just return the art prompt, say nothing else." +
+          "Summarize the following into a theme and create an art prompt from the feel of the text aesthetically along the lines of: 'an abstract of [some unique lesser known art style from history] version of {x}' where x is the feel of the text aesthetically. Feel free to remove any unsafe or NSFW content. Just return the art prompt, say nothing else." +
           text,
       },
     ],
@@ -29,15 +29,22 @@ async function complete(text) {
 }
 
 export async function main(prompt) {
-  prompt = await complete(prompt);
-  prompt = prompt.replace("Art Prompt: ", "").trim();
-  const image = await openai.images.generate({ prompt: prompt });
-  const imageUrl = image.data[0].url;
-
-  return {
-    prompt,
-    imageUrl,
-  };
+  try {
+    prompt = await complete(prompt);
+    prompt = prompt.replace("Art Prompt: ", "").trim();
+    const image = await openai.images.generate({ prompt: prompt });
+    const imageUrl = image.data[0].url;
+  
+    return {
+      prompt,
+      imageUrl,
+    };
+  } catch (err) {
+    return {
+      prompt: "Error generating prompt.",
+      imageUrl: "",
+    };
+  }
 }
 
 export const data = new SlashCommandBuilder()
