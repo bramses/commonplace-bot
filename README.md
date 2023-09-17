@@ -20,6 +20,10 @@ Since the printing press was invented in 1440, books have been printed in roughl
 
 Much of the recent digitization of books has been focused on making them more accessible by weight and convenience, but not more interactive. Thanks to E-readers, we can now carry thousands of books in our pockets. In a sense, we have turned the printing press from a hardware technology into a software technology. If an author wants to publish a book, they can do so without the need for a printing press, or even pressing "print" on their computer, for that matter.
 
+So, the book is a near optimal information transfer for a novel idea. It is cheap to produce and cheap to distribute, but costs heavy effort on the part of the writers and editors and also a non zero commitment on the part of the reader.
+
+> As an intellectual object, a book is prototypically a composition of such great length that it takes a considerable investment of time to compose and still considered as an investment of time to read.
+
 But we still cannot interact with books in any meaningful way outside of...reading.
 
 #### Reading
@@ -46,6 +50,8 @@ Each library, intentionally or unintentionally, applies their own curation effor
 
 On the other end of the spectrum, you have services like Google that serve as a psuedo-library of sorts. Google is a database of all books (all information , really), but it is not curated. The information has no context and outside of surfacing with the same PageRank algorithm that Google uses for all of its search results, there is no way to know what information is more relevant to you than others. In other words, Google will eat anything it can crawl, without any care as to why one document may be better than another. All the curation is applied at runtime, and simply sorted by the context of the search query.
 
+A bookshelf serves as a personal library, and over an individual's lifetime, evolves alongside the interests and curiosities of the reader. Books are lent to family and friends, the collection is curated at a level where book handouts are done for one person at a time. Keep this in mind as this will be important later.
+
 #### Computer Science
 
 While libraries and books have been around for centuries, computer science is a much newer field. Computer science is a field that is only a few decades old, still in its infancy, but is directly related to the tradition of books and libraries. Why? Computer science is the study of information, and how to manipulate it -- using computers. This is quite convenient, because books are a form of information, and libraries are a form of information storage!
@@ -71,14 +77,34 @@ So that's the broad story as it pertains to books and computation. Book technolo
 With all of this in mind, let's talk about Bramdroid.
 
 ## Bramdroid
+
+At the start of this essay, we asked the question: how can we add the newest technologies of computation be used to evolve reading without cheapening the experience of reading? How can we modernize books without losing the value that they have offered for so long? By examining the landscape of available technologies and the history of books, we can now attempt to answer these questions.
+
+No matter what the technology is or represents, we must be able to:
+
+1. Receive a steady stream of high quality books by rewarding authors handsomely for their efforts
+2. Be able to store and retrieve said books at scale
+3. Be able to leverage context to make curation decisions at the individual level, community level, and library level, ideally each level in communication with each other
+4. Have healthy reader engagement with the books, and be able to extricate information from the books in a meaningful way
+5. Be able to share the information with others in a transformative way, i.e. being able to leverage knowledge from the book to create new knowledge in the world
+
+At the individual level (pre-computer), the way to achieve all of these goals was a combination of a personal bookshelf, a society trained in literacy that values books, a local library, a commonplace book to write notes in from the books read, and a brain that could use the best information from books consumed to produce new material (kind of like using oxygen as raw material for ATP).
+
+Bramdroid is my version of what this may look like in the future...today! Let's go through each of the goals above and see how Bramdroid achieves them.
+
+### A High Level Overview
+
+A list of high quality books has been met many times over by the efforts of authors over the centuries who have poured blood sweat and tears into making comprehensive tomes of knowledge. Hopefully this stays the case for the foreseeable future, but this is not something that Bramdroid can control, and perhaps even is a boon, which will be discussed soon.
+
+Storing and retrieving books at scale is theoretically something that Bramdroid can do, but it is not the main focus of Bramdroid. Bramdroid is not a database of raw books chunked at the paragraph level, it is a database of quotes. This is a very important distinction, and will be discussed in detail later.
+
+Leveraging context to make curation decisions at the individual level and community level is the main focus of Bramdroid. Bramdroid is a bot that is meant to be used in a Discord server. This means that Bramdroid can leverage the context of the server to make curation decisions at the community level. Each user that interfaces with Bramdroid has a semi-unique experience that mirrors what one might expect in a library. You walk around, peek at some random shelves, go to a section that interests you and read the back covers of any book that catches your eye. However, every time you uncover one book in fact you are referencing an idea directly, and all the books with that idea will also surface. These ideas trigger new searches that are context dependent and on and on and on. This is a feedback loop that is not possible in a traditional library, and is a huge advantage of Bramdroid.
+
+Healthy reader engagement is achieved thanks to services like Readwise and Obsidian. By being able to capture quotes in a centralized location, and then being able to transform those quotes into other forms of information, we can create a feedback loop between the reader and the book. This is the first time in history that this has been possible. We can not only extricate highlights from books, we can leverage those highlights as independent data points to inform future reading decisions, as well as increase the likelihood of recall.
+
+Finally, transformation is the act of converting a quote as data through a function into another form. This form could be a quiz, an image, a video, a script for a movie, a research paper, a sculpture, whatever! The sky really is the limit! In Bramdroid, I rely heavily on the example of turning book quotes into unique generative art piece. This will be discussed in the `aart` and `share` sections. 
+
 ### Quotes
-
-Why quotes?
-
-- Quotes are short and informationally extremely dense
-- Quotes/highlights are chosen manually by the reader, creating a curation effort implicitly
-- Quotes are generally isolated from their context (the book they came from)
-- Hallucinations are minimized due to there being a strong source seed
 
 Quotes are the perfect (current) medium to leverage LLMs for the following reasons: quotes are short, have very high informational density, are chosen manually by the reader, and generally isolated from their context of the book they came from. 
 
