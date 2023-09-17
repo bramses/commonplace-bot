@@ -132,6 +132,9 @@ New features are added all the time as creativity strikes and as my reading expe
 
 Let pure randomness guide your reading experience. Bramdroid will pick a random quote from the database and display it to you. This is equivalent to picking a random book off of a bookshelf and reading a random page.
 
+![Screenshot 2023-09-17 18-59-04](https://github.com/bramses/bramdroid/assets/3282661/ac0fa2c9-e49d-4dc9-8ffc-9ac49867ed58)
+
+
 #### `/quos`
 
 Power user command to search the database directly for quotes. This is the equivalent of going up to the librarian and asking them to find you a book on a specific topic. Bramdroid will find the quotes that are most similar to the query you give it, and display them to you. This is akin to a breadth-first search of the latent space of the LLM. The matches will rarely be an "exact" match, but this is because the database does not have **all** information, it has **curated** information.
@@ -146,9 +149,18 @@ Will display a help message with all the commands and their descriptions.
 
 Above in the reading section we discussed the importance of being able to have complete context to make a good curation choice. The `delve` button interaction allows you to do just that. When you click the `delve` button, Bramdroid will find similar quotes about the same topic, and display them to you. This allows you to make a more informed decision about whether or not you want to add the quote to your collection, as well as see multiple books that may share the same concept. This is akin to a depth-first search of the latent space of the LLM.
 
+![Screenshot 2023-09-17 18-59-18](https://github.com/bramses/bramdroid/assets/3282661/16533d14-e51c-4289-81a2-22c706c1a980)
+![Screenshot 2023-09-17 18-59-36](https://github.com/bramses/bramdroid/assets/3282661/cf0a8804-ed05-426c-847c-a178f6a4e7a3)
+![Screenshot 2023-09-17 18-59-44](https://github.com/bramses/bramdroid/assets/3282661/16cbe539-a224-4e7e-976b-30cf9dc1088f)
+
+
 #### `tldr`
 
 Some quotes are too long and you may rightly not want to read them. The `tldr` button interaction will generate a summary of the quote for you.
+
+![Screenshot 2023-09-17 18-59-04](https://github.com/bramses/bramdroid/assets/3282661/24d55fab-7405-481f-98b5-5d738614719f)
+![Screenshot 2023-09-17 18-59-12](https://github.com/bramses/bramdroid/assets/3282661/1e064e99-cae3-47fe-b0df-eb39b14b9d61)
+
 
 #### `aart`
 
