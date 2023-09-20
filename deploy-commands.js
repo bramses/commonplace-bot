@@ -3,7 +3,18 @@ import config from './config.json' assert { "type": "json" };
 import fs from 'node:fs';
 import path from 'node:path';
 
-const { clientId, guildId, token } = config;
+let clientId;
+let token;
+const { guildId, is_production } = config;
+
+if (is_production) {
+	clientId = config.clientId;
+	token = config.token;
+} else {
+	clientId = config.test_client_id;
+	token = config.test_token;
+	console.log('Using test client ID');
+}
 
 const commands = [];
 // Grab all the command files from the commands directory you created earlier
@@ -44,5 +55,6 @@ const rest = new REST().setToken(token);
 	} catch (error) {
 		// And of course, make sure you catch and log any errors!
 		console.error(error);
+		console.log(error.data);
 	}
 })();

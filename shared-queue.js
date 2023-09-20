@@ -1,4 +1,4 @@
-const MAX_CONCURRENT_CALLS = 1;
+const MAX_CONCURRENT_CALLS = 10;
 let currentCalls = 0;
 export const queue = [];
 

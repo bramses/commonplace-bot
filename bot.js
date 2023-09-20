@@ -43,48 +43,52 @@ client.on("ready", () => {
   const job = new CronJob(
     "*/60 * * * *",
     async () => {
-      console.log("You will see this message every hour");
-      let random = await randomExport();
+      try {
+        console.log("You will see this message every hour");
+        let random = await randomExport();
 
-      while (random.text.length > 2000) {
-        random = await randomExport();
+        while (random.text.length > 2000) {
+          random = await randomExport();
+        }
+
+        const channel = await client.channels.fetch(channelId);
+
+        //   const repost = new ButtonBuilder()
+        //   .setCustomId("repost")
+        //   .setLabel("new-home")
+        //   .setStyle(ButtonStyle.Primary);
+
+        //   const makeAart = new ButtonBuilder()
+        //     .setCustomId("aart_btn")
+        //     .setLabel("aart")
+        //     .setStyle(ButtonStyle.Primary);
+
+        //   const learnMore = new ButtonBuilder()
+        //     .setCustomId("quos_learn_more")
+        //     .setLabel("delve")
+        //     .setStyle(ButtonStyle.Primary);
+
+        const summarize = new ButtonBuilder()
+          .setCustomId("summarize")
+          .setLabel("tldr")
+          .setStyle(ButtonStyle.Primary);
+
+        const share = new ButtonBuilder()
+          .setCustomId("share")
+          .setLabel("share")
+          .setStyle(ButtonStyle.Primary);
+
+        const row = new ActionRowBuilder().addComponents(summarize, share);
+
+        await channel.send({
+          content: `> ${random.text}\n\n-- [${
+            random.book.title
+          } (**affiliate link**)](${lookupBook(random.book.title)})`,
+          components: [row],
+        });
+      } catch (err) {
+        console.error(err);
       }
-
-      const channel = await client.channels.fetch(channelId);
-
-      //   const repost = new ButtonBuilder()
-      //   .setCustomId("repost")
-      //   .setLabel("new-home")
-      //   .setStyle(ButtonStyle.Primary);
-
-      //   const makeAart = new ButtonBuilder()
-      //     .setCustomId("aart_btn")
-      //     .setLabel("aart")
-      //     .setStyle(ButtonStyle.Primary);
-
-      //   const learnMore = new ButtonBuilder()
-      //     .setCustomId("quos_learn_more")
-      //     .setLabel("delve")
-      //     .setStyle(ButtonStyle.Primary);
-
-      const summarize = new ButtonBuilder()
-        .setCustomId("summarize")
-        .setLabel("tldr")
-        .setStyle(ButtonStyle.Primary);
-
-      const share = new ButtonBuilder()
-        .setCustomId("share")
-        .setLabel("share")
-        .setStyle(ButtonStyle.Primary);
-
-      const row = new ActionRowBuilder().addComponents(summarize, share);
-
-      await channel.send({
-        content: `> ${random.text}\n\n-- [${
-          random.book.title
-        } (**affiliate link**)](${lookupBook(random.book.title)})`,
-        components: [row],
-      });
     },
     null,
     true,
@@ -185,7 +189,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
           await invocationWorkflow(interaction, true);
 
           await message.edit({
-            content: `<@${user}>, your request has been processed! Link: ${res.url}`,
+            content: `<@${user}>, your tldr request has been processed! Link: ${res.url}`,
             ephemeral: true,
           });
         },
@@ -195,23 +199,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
       });
 
       processQueue();
-
-      // await interaction.deferReply();
-
-      // const summary = await complete(
-      //   `tldr to one or two sentences this:\n${interaction.message.content
-      //     .replace(/\(\*\*affiliate link\*\*\)/g, "")
-      //     .replace(/\[(.*?)\]\((.*?)\)/g, "$1")
-      //     .trim()}`
-      // );
-
-      // if (interaction.replied || interaction.deferred) {
-      //   await interaction.followUp(summary);
-      // } else {
-      //   await interaction.reply(summary);
-      // }
-      // interaction.commandName = "summarize";
-      // await invocationWorkflow(interaction, true);
     } else if (interaction.customId === "follow_up_questions") {
       await interaction.deferReply({
         ephemeral: true,
@@ -371,23 +358,64 @@ client.on(Events.InteractionCreate, async (interaction) => {
         ephemeral: true,
       });
     } else if (interaction.customId === "aart_btn") {
-      await interaction.deferReply();
-      await preWorkflow(interaction);
-      const { prompt, imageUrl } = await main(interaction.message.content);
-
-      if (interaction.replied || interaction.deferred) {
-        await interaction.followUp(
-          `Art Prompt (**save the image -- it disappears in 24 hours!**): ${prompt} \n Image: [(url)](${imageUrl})`
-        );
-      } else {
-        await interaction.reply(
-          `Art Prompt (**save the image -- it disappears in 24 hours!**): ${prompt} \n Image: [(url)](${imageUrl})`
-        );
-      }
-      console.log(imageUrl);
-      // set interaction command name to aart
       interaction.commandName = "aart";
-      await invocationWorkflow(interaction, true);
+      if (!(await preWorkflow(interaction))) {
+        await interaction.reply({
+          content:
+            "You have reached your monthly limit for this command: " +
+            interaction.commandName +
+            ". You can get more invocations by supporting the project [here](https://www.bramadams.dev/discord/)!",
+          ephemeral: true,
+        });
+        return;
+      }
+
+      const sentMessage = await interaction.reply({
+        content: `<@${interaction.user.id}>, your request has been added to the queue.`,
+        ephemeral: true,
+      });
+  
+
+      queue.push({
+        task: async (user, message) => {
+          const { prompt, imageUrl } = await main(interaction.message.content);
+
+          // send message to channel
+          const channelMsg = await interaction.channel.send(
+            `Art Prompt (**save the image it disappears in 24 hours!**): ${prompt} \n Image: [(url)](${imageUrl})`
+          );
+
+          console.log(imageUrl);
+          interaction.commandName = "aart";
+          await invocationWorkflow(interaction, true);
+          await interaction.editReply({
+            content: `<@${interaction.user.id}>, your request has been completed. Link to result: ${channelMsg.url}`,
+            ephemeral: true,
+          });
+        },
+        user: interaction.user,
+        message: sentMessage,
+        interaction,
+      });
+
+      processQueue();
+      // await interaction.deferReply();
+      // await preWorkflow(interaction);
+      // const { prompt, imageUrl } = await main(interaction.message.content);
+
+      // if (interaction.replied || interaction.deferred) {
+      //   await interaction.followUp(
+      //     `Art Prompt (**save the image -- it disappears in 24 hours!**): ${prompt} \n Image: [(url)](${imageUrl})`
+      //   );
+      // } else {
+      //   await interaction.reply(
+      //     `Art Prompt (**save the image -- it disappears in 24 hours!**): ${prompt} \n Image: [(url)](${imageUrl})`
+      //   );
+      // }
+      // console.log(imageUrl);
+      // // set interaction command name to aart
+      // interaction.commandName = "aart";
+      // await invocationWorkflow(interaction, true);
     } else if (interaction.customId === "share") {
       /*
 		1. get an image url from aart
@@ -416,56 +444,73 @@ client.on(Events.InteractionCreate, async (interaction) => {
         ephemeral: true,
       });
 
-      queue.push({
-        task: async (user, message) => {
-          let userInput = interaction.message.content.trim();
-          // remove [cover](url) from userInput
-          const regex = /\[cover\]\((.*)\)/;
-          const match = userInput.match(regex);
-          if (match) {
-            userInput = userInput.replace(match[0], "").trim();
-          }
+      try {
+        queue.push({
+          task: async (user, message) => {
+            let userInput = interaction.message.content.trim();
+            // remove [cover](url) from userInput
+            const regex = /\[cover\]\((.*)\)/;
+            const match = userInput.match(regex);
+            if (match) {
+              userInput = userInput.replace(match[0], "").trim();
+            }
 
-          // remove leading >
-          userInput = userInput.replace(/^>/, "").trim();
+            // remove leading >
+            userInput = userInput.replace(/^>/, "").trim();
 
-          // remove any markdown links
-          userInput = userInput.replace(/\[(.*?)\]\((.*?)\)/g, "$1");
+            // remove any markdown links
+            userInput = userInput.replace(/\[(.*?)\]\((.*?)\)/g, "$1");
 
-          // remove (**affiliate link**) from userInput
-          userInput = userInput
-            .replace(/\(\*\*affiliate link\*\*\)/g, "")
-            .trim();
+            // remove (**affiliate link**) from userInput
+            userInput = userInput
+              .replace(/\(\*\*affiliate link\*\*\)/g, "")
+              .trim();
 
-          // await interaction.followUp("This feature is not yet implemented.");
+            // await interaction.followUp("This feature is not yet implemented.");
 
-          const { prompt, imageUrl } = await main(userInput);
-          const response = await fetch(config.quoordinates_server_share, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ text: userInput, url: imageUrl }),
-          });
-          const json = await response.json();
+            const { prompt, imageUrl } = await main(userInput);
 
-          const shareUrl = json.result;
-          const res = await interaction.followUp(`${shareUrl}`);
+            if (prompt === "Error generating prompt.") {
+              await interaction.followUp({
+                content: "Something went wrong. Please try again.",
+                ephemeral: true,
+              });
+              return;
+            }
 
-          interaction.commandName = "share";
-          await invocationWorkflow(interaction, true);
+            const response = await fetch(config.quoordinates_server_share, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ text: userInput, url: imageUrl }),
+            });
+            const json = await response.json();
 
-          await message.edit({
-            content: `<@${user}>, your request has been processed! Link: ${res.url}`,
-            ephemeral: true,
-          });
-        },
-        user: interaction.user.id,
-        interaction: interaction,
-        message: sentMessage,
-      });
+            const shareUrl = json.result;
+            const res = await interaction.followUp(`${shareUrl}`);
 
-      processQueue();
+            interaction.commandName = "share";
+            await invocationWorkflow(interaction, true);
+
+            await message.edit({
+              content: `<@${user}>, your share request has been processed! Link: ${res.url}`,
+              ephemeral: true,
+            });
+          },
+          user: interaction.user.id,
+          interaction: interaction,
+          message: sentMessage,
+        });
+
+        processQueue();
+      } catch (err) {
+        console.log(err);
+        await interaction.followUp({
+          content: "Something went wrong. Please try again.",
+          ephemeral: true,
+        });
+      }
     } else if (interaction.customId === "cloze_deletion") {
       interaction.commandName = "cloze_deletion";
       await preWorkflow(interaction);
@@ -494,11 +539,21 @@ client.on(Events.InteractionCreate, async (interaction) => {
       interaction.commandName = "cloze_deletion";
       await invocationWorkflow(interaction, true);
     } else if (interaction.customId === "repost") {
+      interaction.commandName = "repost";
+      if (!(await preWorkflow(interaction))) {
+        await interaction.editReply({
+          content:
+            "You have reached your monthly limit for this command: " +
+            interaction.commandName +
+            ". You can get more invocations by supporting the project [here](https://www.bramadams.dev/discord/)!",
+          ephemeral: true,
+        });
+        return;
+      }
+
       await interaction.deferReply({
         ephemeral: true,
       });
-      interaction.commandName = "repost";
-      await preWorkflow(interaction);
       const channels = [
         {
           name: "00-cs-info",
@@ -730,7 +785,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
       await invocationWorkflow(interaction, true);
     } else if (interaction.customId === "quos_learn_more") {
       interaction.commandName = "delve";
-      await preWorkflow(interaction);
       if (!(await preWorkflow(interaction))) {
         await interaction.reply({
           content:
@@ -742,171 +796,279 @@ client.on(Events.InteractionCreate, async (interaction) => {
         return;
       }
 
-      await interaction.deferReply();
-      const similarQuos = await quosLogic(interaction.message.content);
+      const sentMessage = await interaction.reply({
+        content: `<@${interaction.user.id}>, your request has been added to the queue.`,
+        ephemeral: true,
+      });
 
-      const makeAart = new ButtonBuilder()
-        .setCustomId("aart_btn")
-        .setLabel("aart")
-        .setStyle(ButtonStyle.Primary);
+      queue.push({
+        task: async (user, message) => {
+          const similarQuos = await quosLogic(interaction.message.content);
+          console.log(similarQuos);
 
-      const learnMore = new ButtonBuilder()
-        .setCustomId("quos_learn_more")
-        .setLabel("delve")
-        .setStyle(ButtonStyle.Primary);
+          const makeAart = new ButtonBuilder()
+            .setCustomId("aart_btn")
+            .setLabel("aart")
+            .setStyle(ButtonStyle.Primary);
 
-      const summarize = new ButtonBuilder()
-        .setCustomId("summarize")
-        .setLabel("tldr")
-        .setStyle(ButtonStyle.Primary);
+          const learnMore = new ButtonBuilder()
+            .setCustomId("quos_learn_more")
+            .setLabel("delve")
+            .setStyle(ButtonStyle.Primary);
 
-      const share = new ButtonBuilder()
-        .setCustomId("share")
-        .setLabel("share")
-        .setStyle(ButtonStyle.Primary);
+          const summarize = new ButtonBuilder()
+            .setCustomId("summarize")
+            .setLabel("tldr")
+            .setStyle(ButtonStyle.Primary);
 
-      const row = new ActionRowBuilder().addComponents(
-        makeAart,
-        learnMore,
-        summarize,
-        share
-      );
+          const share = new ButtonBuilder()
+            .setCustomId("share")
+            .setLabel("share")
+            .setStyle(ButtonStyle.Primary);
 
-      // get other messages in current thread
-      if (interaction.channel instanceof ThreadChannel) {
-        const threadId = interaction.channel.id; // replace with your thread ID
-        const thread = await client.channels.fetch(threadId);
-        if (thread instanceof ThreadChannel) {
-          const messages = await thread.messages.fetch();
-          const messagesContent = messages.map((m) => m.content);
+          const row = new ActionRowBuilder().addComponents(
+            makeAart,
+            learnMore,
+            summarize,
+            share
+          );
 
-          const quotes = similarQuos
-            .filter((q) => {
-              return !interaction.message.content.includes(q.text);
-            })
-            .filter((q) => {
-              // q.text is the quote should not be in any of the messages from messagesContent
-              return !messagesContent.some((m) => m.includes(q.text));
-            })
-            .map(
-              (q) =>
-                `> ${q.text}\n\n-- ${
-                  lookupBook(q.title)
-                    ? `[${q.title} (**affiliate link**)](${lookupBook(
-                        q.title
-                      )})`
-                    : q.title
-                }\n\n`
-            )
-            .filter((q) => q.length < 2000);
-          // append quotes to thread
+          // get other messages in current thread
+          if (interaction.channel instanceof ThreadChannel) {
+            const threadId = interaction.channel.id; // replace with your thread ID
+            const thread = await client.channels.fetch(threadId);
+            if (thread instanceof ThreadChannel) {
+              const messages = await thread.messages.fetch();
+              const messagesContent = messages.map((m) => m.content);
 
-          if (quotes.length === 0) {
-            await interaction.followUp({
-              content: "No more quotes found!",
-              components: [],
-            });
+              const quotes = similarQuos
+                .filter((q) => {
+                  return !interaction.message.content.includes(q.text);
+                })
+                .filter((q) => {
+                  // q.text is the quote should not be in any of the messages from messagesContent
+                  return !messagesContent.some((m) => m.includes(q.text));
+                })
+                .map(
+                  (q) =>
+                    `> ${q.text}\n\n-- ${
+                      lookupBook(q.title)
+                        ? `[${q.title} (**affiliate link**)](${lookupBook(
+                            q.title
+                          )})`
+                        : q.title
+                    }\n\n`
+                )
+                .filter((q) => q.length < 2000);
+              // append quotes to thread
+
+              let firstQuote = null;
+
+              if (quotes.length === 0) {
+                firstQuote = await interaction.followUp({
+                  content: "No more quotes found!",
+                  components: [],
+                });
+              } else {
+                for (const quote of quotes) {
+                  if (!firstQuote) {
+                    firstQuote = await interaction.followUp({
+                      content: quote,
+                      components: [row],
+                    });
+                  } else {
+                    await interaction.followUp({
+                      content: quote,
+                      components: [row],
+                    });
+                  }
+                }
+              }
+
+              interaction.commandName = "delve";
+              await invocationWorkflow(interaction, true);
+
+              await message.edit({
+                content: `<@${user}>, your delve request has been processed! Link: ${firstQuote.url}`,
+                ephemeral: true,
+              });
+            } else {
+              console.log("The channel with the provided ID is not a thread.");
+            }
           } else {
+            // create a new thread and post the quotes there
+            const thread = await interaction.channel.threads.create({
+              name:
+                interaction.message.content
+                  .replace(/\[(.*?)\]\((.*?)\)/g, "$1")
+                  .replace(/\(\*\*affiliate link\*\*\)/g, "")
+                  .slice(0, 50) + "...",
+              autoArchiveDuration: 60,
+              type: ChannelType.GUILD_PUBLIC_THREAD,
+              reason: "Sending quotes as separate messages in one thread",
+            });
+
+            const quotes = similarQuos
+              .filter((q) => {
+                return !interaction.message.content.includes(q.text);
+              })
+              .map(
+                (q) =>
+                  `> ${q.text}\n\n-- ${
+                    lookupBook(q.title)
+                      ? `[${q.title} (**affiliate link**)](${lookupBook(
+                          q.title
+                        )})`
+                      : q.title
+                  }\n\n`
+              )
+              .filter((q) => q.length < 2000);
+            // append quotes to thread
+
             for (const quote of quotes) {
-              await interaction.followUp({
+              await thread.send({
                 content: quote,
                 components: [row],
               });
             }
+
+            interaction.commandName = "delve";
+            await invocationWorkflow(interaction, true);
+
+            await message.edit({
+              content: `<@${user}>, your delve request has been processed! Link: ${thread.url}`,
+              ephemeral: true,
+            });
           }
+        },
+        user: interaction.user.id,
+        interaction: interaction,
+        message: sentMessage,
+      });
 
-          interaction.commandName = "delve";
-          await invocationWorkflow(interaction, true);
-        } else {
-          console.log("The channel with the provided ID is not a thread.");
-        }
-      } else {
-        // create a new thread and post the quotes there
-        const thread = await interaction.channel.threads.create({
-          name:
-            interaction.message.content
-              .replace(/\[(.*?)\]\((.*?)\)/g, "$1")
-              .replace(/\(\*\*affiliate link\*\*\)/g, "")
-              .slice(0, 50) + "...",
-          autoArchiveDuration: 60,
-          type: ChannelType.GUILD_PUBLIC_THREAD,
-          reason: "Sending quotes as separate messages in one thread",
-        });
+      processQueue();
 
-        const quotes = similarQuos
-          .filter((q) => {
-            return !interaction.message.content.includes(q.text);
-          })
-          .map(
-            (q) =>
-              `> ${q.text}\n\n-- ${
-                lookupBook(q.title)
-                  ? `[${q.title} (**affiliate link**)](${lookupBook(q.title)})`
-                  : q.title
-              }\n\n`
-          )
-          .filter((q) => q.length < 2000);
-        // append quotes to thread
+      // await interaction.deferReply();
+      // const similarQuos = await quosLogic(interaction.message.content);
 
-        for (const quote of quotes) {
-          await thread.send({
-            content: quote,
-            components: [row],
-          });
-        }
+      // const makeAart = new ButtonBuilder()
+      //   .setCustomId("aart_btn")
+      //   .setLabel("aart")
+      //   .setStyle(ButtonStyle.Primary);
 
-        await interaction.followUp({
-          content: `Quotes sent to thread: ${thread.url}`,
-          components: [],
-        });
+      // const learnMore = new ButtonBuilder()
+      //   .setCustomId("quos_learn_more")
+      //   .setLabel("delve")
+      //   .setStyle(ButtonStyle.Primary);
 
-        // if (interaction.replied || interaction.deferred) {
-        //   // get the last 10 messages in the channel
-        //   const messages = await interaction.channel.messages.fetch({
-        //     limit: 10,
-        //   });
-        //   const messagesContent = messages.map((m) => m.content);
+      // const summarize = new ButtonBuilder()
+      //   .setCustomId("summarize")
+      //   .setLabel("tldr")
+      //   .setStyle(ButtonStyle.Primary);
 
-        //   const quotes = similarQuos
-        //     .filter((q) => {
-        //       return !interaction.message.content.includes(q.text);
-        //     })
-        //     .filter((q) => {
-        //       // q.text is the quote should not be in any of the messages from messagesContent
-        //       return !messagesContent.some((m) => m.includes(q.text));
-        //     })
-        //     .map(
-        //       (q) =>
-        //         `> ${q.text}\n\n-- ${
-        //           lookupBook(q.title)
-        //             ? `[${q.title} (**affiliate link**)](${lookupBook(
-        //                 q.title
-        //               )})`
-        //             : q.title
-        //         }\n\n`
-        //     )
-        //     .filter((q) => q.length < 2000);
-        //   // append quotes to thread
+      // const share = new ButtonBuilder()
+      //   .setCustomId("share")
+      //   .setLabel("share")
+      //   .setStyle(ButtonStyle.Primary);
 
-        //   if (quotes.length === 0) {
-        //     await interaction.followUp({
-        //       content: "No more quotes found!",
-        //       components: [],
-        //     });
-        //   } else {
-        //     for (const quote of quotes) {
-        //       await interaction.followUp({
-        //         content: quote,
-        //         components: [row],
-        //       });
-        //     }
-        //   }
-        // } else {
-        //   console.log("in the reply or defer");
-        // }
-        interaction.commandName = "delve";
-        await invocationWorkflow(interaction, true);
-      }
+      // const row = new ActionRowBuilder().addComponents(
+      //   makeAart,
+      //   learnMore,
+      //   summarize,
+      //   share
+      // );
+
+      // // get other messages in current thread
+      // if (interaction.channel instanceof ThreadChannel) {
+      //   const threadId = interaction.channel.id; // replace with your thread ID
+      //   const thread = await client.channels.fetch(threadId);
+      //   if (thread instanceof ThreadChannel) {
+      //     const messages = await thread.messages.fetch();
+      //     const messagesContent = messages.map((m) => m.content);
+
+      //     const quotes = similarQuos
+      //       .filter((q) => {
+      //         return !interaction.message.content.includes(q.text);
+      //       })
+      //       .filter((q) => {
+      //         // q.text is the quote should not be in any of the messages from messagesContent
+      //         return !messagesContent.some((m) => m.includes(q.text));
+      //       })
+      //       .map(
+      //         (q) =>
+      //           `> ${q.text}\n\n-- ${
+      //             lookupBook(q.title)
+      //               ? `[${q.title} (**affiliate link**)](${lookupBook(
+      //                   q.title
+      //                 )})`
+      //               : q.title
+      //           }\n\n`
+      //       )
+      //       .filter((q) => q.length < 2000);
+      //     // append quotes to thread
+
+      //     if (quotes.length === 0) {
+      //       await interaction.followUp({
+      //         content: "No more quotes found!",
+      //         components: [],
+      //       });
+      //     } else {
+      //       for (const quote of quotes) {
+      //         await interaction.followUp({
+      //           content: quote,
+      //           components: [row],
+      //         });
+      //       }
+      //     }
+
+      //     interaction.commandName = "delve";
+      //     await invocationWorkflow(interaction, true);
+      //   } else {
+      //     console.log("The channel with the provided ID is not a thread.");
+      //   }
+      // } else {
+      //   // create a new thread and post the quotes there
+      //   const thread = await interaction.channel.threads.create({
+      //     name:
+      //       interaction.message.content
+      //         .replace(/\[(.*?)\]\((.*?)\)/g, "$1")
+      //         .replace(/\(\*\*affiliate link\*\*\)/g, "")
+      //         .slice(0, 50) + "...",
+      //     autoArchiveDuration: 60,
+      //     type: ChannelType.GUILD_PUBLIC_THREAD,
+      //     reason: "Sending quotes as separate messages in one thread",
+      //   });
+
+      //   const quotes = similarQuos
+      //     .filter((q) => {
+      //       return !interaction.message.content.includes(q.text);
+      //     })
+      //     .map(
+      //       (q) =>
+      //         `> ${q.text}\n\n-- ${
+      //           lookupBook(q.title)
+      //             ? `[${q.title} (**affiliate link**)](${lookupBook(q.title)})`
+      //             : q.title
+      //         }\n\n`
+      //     )
+      //     .filter((q) => q.length < 2000);
+      //   // append quotes to thread
+
+      //   for (const quote of quotes) {
+      //     await thread.send({
+      //       content: quote,
+      //       components: [row],
+      //     });
+      //   }
+
+      //   await interaction.followUp({
+      //     content: `Quotes sent to thread: ${thread.url}`,
+      //     components: [],
+      //   });
+
+      //   interaction.commandName = "delve";
+      //   await invocationWorkflow(interaction, true);
+      // }
     }
 
     return;
@@ -936,4 +1098,10 @@ client.on(Events.InteractionCreate, async (interaction) => {
     }
   }
 });
-client.login(config.token);
+
+if (config.is_production) {
+  client.login(config.token);
+} else {
+  client.login(config.test_token);
+  console.log("test token");
+}

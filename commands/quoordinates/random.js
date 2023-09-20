@@ -96,8 +96,7 @@ export async function execute(interaction) {
       repost,
       learnMore,
       summarize,
-      share,
-      cloze
+      share
     );
 
     // \n\n[cover](${random.book.cover_image_url})
