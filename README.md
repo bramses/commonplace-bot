@@ -221,6 +221,22 @@ However, there are some tactics that can be used to inspire your own bots of a s
 
 I won't be discussing how the quotes get into the database, that is discussed on the backend server GiHub repo for [Quoordinates](https://github.com/bramses/quoordinates). The important thing to know about this pipeline is that everytime I highlight a quote on my Kindle, it ends up in Bramdroid's database. Hand-wavey, but there ya go.
 
+## Why Discord?
+
+A question I asked myself many times while building out Bramdroid, is: why do it on Discord? This choice is partially due to pragmatism, Discord-only features, and what I envision the future of LLM style app building to look like in the future.
+
+### Pragmatism
+
+First, let's get the obvious out of the way. Discord is a very popular platform, and is a great way to get a lot of people to use your bot. Also, building full stack applications, especially in the nascent space of LLMs and handling the end to end experience as well as edge cases, authentication, data storage, etc. is really REALLY hard to do well. [Trust me, I know](https://stenography.dev/). So Discord is nice because it handles a lot of the hard stuff for you, and you can focus on the fun stuff.
+
+### Discord-only Features
+
+Discord is a BYOC (bring your own community). This is one of the hardest things to do when building a new program/algorithm/app is getting people to the right context to use it. With Discord you can easily give people roles where they can do x but not y or invite them to beta channels for example.
+
+### The Future of LLMs
+
+I think that much of the current LLM landscape is "single player". One person interfacing with a ChatGPT window. However, this is far from being the only way to interface. Discord allows for small closed communities to interact with the inputs and outputs of what goes into the bots, and inspire each other to create never before seen outcomes. I think that this is the near future of LLM apps, and Discord is a great way to get started.
+
 ### OpenAI + Discord
 
 {UNDER CONSTRUCTION 👷‍♀️}
