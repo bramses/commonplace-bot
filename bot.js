@@ -189,7 +189,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
           await invocationWorkflow(interaction, true);
 
           await message.edit({
-            content: `<@${user}>, your tldr request has been processed! Link: ${res.url}`,
+            content: `<@${user}>, your \`/tldr\` request has been processed! Link: ${res.url}`,
             ephemeral: true,
           });
         },
@@ -494,7 +494,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
             await invocationWorkflow(interaction, true);
 
             await message.edit({
-              content: `<@${user}>, your share request has been processed! Link: ${res.url}`,
+              content: `<@${user}>, your \`/share\` request has been processed! Link: ${res.url}`,
               ephemeral: true,
             });
           },
@@ -889,7 +889,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
               await invocationWorkflow(interaction, true);
 
               await message.edit({
-                content: `<@${user}>, your delve request has been processed! Link: ${firstQuote.url}`,
+                content: `<@${user}>, your \`/delve\` request has been processed! Link: ${firstQuote.url}`,
                 ephemeral: true,
               });
             } else {
@@ -936,7 +936,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
             await invocationWorkflow(interaction, true);
 
             await message.edit({
-              content: `<@${user}>, your delve request has been processed! Link: ${thread.url}`,
+              content: `<@${user}>, your \`/delve\` request has been processed! Link: ${thread.url}`,
               ephemeral: true,
             });
           }

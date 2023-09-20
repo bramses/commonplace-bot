@@ -100,7 +100,7 @@ export async function execute(interaction) {
       };
 
       await message.edit({
-        content: `<@${user}>, your curio request has been processed! Link: ${msg.url}`,
+        content: `<@${user}>, your \`/curio\` request has been processed! Link: ${msg.url}`,
         ephemeral: true,
       });
 
