@@ -32,6 +32,7 @@ const client = new Client({
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
     GatewayIntentBits.GuildMessageReactions,
+    GatewayIntentBits.GuildMembers,
   ],
   partials: [Partials.Message, Partials.Channel, Partials.Reaction],
 });
@@ -1097,6 +1098,15 @@ client.on(Events.InteractionCreate, async (interaction) => {
       }
     }
   }
+});
+
+client.on('guildMemberAdd', member => {
+  // Send the message to a designated channel on a server:
+  const channel = member.guild.channels.cache.find(ch => ch.name === 'onboarding');
+  // Do nothing if the channel wasn't found on this server
+  if (!channel) return;
+  // Send the message, mentioning the member
+  channel.send(`Welcome to the server, ${member}! Let's get started by typing \`/curio\` in this channel. Then follow the prompts! You may also prefer to go through the official Discord onboarding workflow and introduce yourself here!`);
 });
 
 if (config.is_production) {

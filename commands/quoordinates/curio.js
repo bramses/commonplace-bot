@@ -140,7 +140,11 @@ export async function execute(interaction) {
                     }\n\n`
                 )
                 .filter((q) => q.length < 2000);
-              const thread = await i.channel.threads.create({
+
+                const startMessage = await interaction.channel.send(
+                  `${question.question}`,
+                );
+                const thread = await startMessage.startThread({
                 name: question.question.slice(0, 50) + "...",
                 autoArchiveDuration: 60,
                 type: ChannelType.GUILD_PUBLIC_THREAD,
@@ -168,9 +172,9 @@ export async function execute(interaction) {
                 summarize,
                 share
               );
-              await thread.send({
-                content: `**Question:** ${question.question}`,
-              });
+              // await thread.send({
+              //   content: `**Question:** ${question.question}`,
+              // });
 
               for (const quote of quotes) {
                 await thread.send({

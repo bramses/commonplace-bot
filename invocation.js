@@ -48,6 +48,13 @@ const addInvocation = (interaction, invocations, isButton = false, query = null)
         time: new Date().toISOString(),
         query: query,
     });
+
+    // trim commands to last 10 if more than 10
+
+    if (invocations[userName].commands.length > 10) {
+        invocations[userName].commands = invocations[userName].commands.slice(-10);
+    }
+
     if (interaction.commandName in invocations[userName].commandInvocations) {
         invocations[userName].commandInvocations[interaction.commandName] += 1;
     } else {

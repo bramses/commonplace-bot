@@ -9,6 +9,7 @@ import {
 import { invocationWorkflow, preWorkflow } from "../../invocation.js";
 import { lookupBook } from "../../books.js";
 import chunk from "chunk-text";
+import { queue, processQueue } from "../../shared-queue.js";
 
 const { quoordinates_server } = config;
 
@@ -40,9 +41,9 @@ export const data = new SlashCommandBuilder()
 
 export async function execute(interaction) {
   try {
-    await interaction.deferReply({
-      ephemeral: true,
-    });
+    // await interaction.deferReply({
+    //   ephemeral: true,
+    // });
 
     interaction.commandName = "quos";
     if (!(await preWorkflow(interaction))) {
@@ -56,7 +57,14 @@ export async function execute(interaction) {
       return;
     }
 
-    const userInput = interaction.options.getString("input");
+    const sentMessage = await interaction.reply({
+      content: `<@${interaction.user.id}>, your request has been added to the queue.`,
+      ephemeral: true,
+    });
+
+    queue.push({
+      task: async (user, message) => {
+        const userInput = interaction.options.getString("input");
     const quoordinate = await quosLogic(userInput);
 
     const quotes = quoordinate
@@ -71,7 +79,7 @@ export async function execute(interaction) {
       .filter((q) => q.length < 2000); // still filtering out quotes that are too long because the UX is bad but logic is in conditional below "logic for splitting quotes into multiple messages"
 
     const startMessage = await interaction.channel.send(
-      "Starting a new thread..."
+      `**Question:** ${userInput}`,
     );
     const thread = await startMessage.startThread({
       name: userInput.slice(0, 50) + "...",
@@ -106,10 +114,10 @@ export async function execute(interaction) {
       share
     );
 
+
     for (const quote of quotes) {
       if (quote.length > 2000) {
         // logic for splitting quotes into multiple messages
-        console.log("quote too long");
         // split into multiple messages by last word within 2000 ch and add (cont) if quote is too long the last should have the row
 
         const title = quote.split("\n\n")[1];
@@ -149,16 +157,23 @@ export async function execute(interaction) {
       }
     }
 
-    try {
-      await interaction.editReply({
-        content: `@${interaction.user.username}, here's a thread with quotes that might help you answer your question: ${thread.url}`,
-        ephemeral: true,
-      });
-    } catch (err) {
-      console.log(err);
-    }
+    
 
     await invocationWorkflow(interaction);
+
+    await interaction.editReply({
+      content: `<@${interaction.user.id}>, your \`/quos\` request has been processed. Link to result: ${thread.url}`,
+      ephemeral: true,
+    });
+
+
+      },
+      user: interaction.user,
+      message: sentMessage,
+      interaction: interaction,
+    });
+
+    processQueue();
   } catch (err) {
     console.log(err);
   }
