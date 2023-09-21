@@ -7,7 +7,7 @@ const books = JSON.parse(fs.readFileSync('./books.json', 'utf8'));
 
 export const lookupBook = (title) => {
     for (const book of books.books) {
-        if (book.title.toLowerCase().includes(title.toLowerCase())) {
+        if (book.title.toLowerCase() === (title.toLowerCase())) {
             return book.link;
         }
     }
