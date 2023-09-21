@@ -375,7 +375,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
         content: `<@${interaction.user.id}>, your request has been added to the queue.`,
         ephemeral: true,
       });
-  
 
       queue.push({
         task: async (user, message) => {
@@ -898,7 +897,10 @@ client.on(Events.InteractionCreate, async (interaction) => {
             }
           } else {
             // create a new thread and post the quotes there
-            const thread = await interaction.channel.threads.create({
+            const startMessage = await interaction.channel.send(
+              `${interaction.message.content}`
+            );
+            const thread = await startMessage.startThread({
               name:
                 interaction.message.content
                   .replace(/\[(.*?)\]\((.*?)\)/g, "$1")
@@ -1100,13 +1102,17 @@ client.on(Events.InteractionCreate, async (interaction) => {
   }
 });
 
-client.on('guildMemberAdd', member => {
+client.on("guildMemberAdd", (member) => {
   // Send the message to a designated channel on a server:
-  const channel = member.guild.channels.cache.find(ch => ch.name === 'onboarding');
+  const channel = member.guild.channels.cache.find(
+    (ch) => ch.name === "onboarding"
+  );
   // Do nothing if the channel wasn't found on this server
   if (!channel) return;
   // Send the message, mentioning the member
-  channel.send(`Welcome to the server, ${member}! Let's get started by typing \`/curio\` in this channel. Then follow the prompts! You may also prefer to go through the official Discord onboarding workflow and introduce yourself here!`);
+  channel.send(
+    `Welcome to the server, ${member}! Let's get started by typing \`/curio\` in this channel. Then follow the prompts! You may also prefer to go through the official Discord onboarding workflow and introduce yourself here!`
+  );
 });
 
 if (config.is_production) {

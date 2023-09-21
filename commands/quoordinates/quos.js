@@ -57,6 +57,16 @@ export async function execute(interaction) {
       return;
     }
 
+    // check if in thread -- should not work in thread
+  if (interaction.channel.type === ChannelType.PublicThread) {
+    await interaction.reply({
+      content:
+        "The \`/quos\` command does not work in threads. Please use it in the main channel.",
+      ephemeral: true,
+    });
+    return;
+  }
+
     const sentMessage = await interaction.reply({
       content: `<@${interaction.user.id}>, your request has been added to the queue.`,
       ephemeral: true,
