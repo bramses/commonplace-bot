@@ -12,6 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@supabase/supabase-js": "^2.36.0",
     "bad-words": "^3.0.4",
     "chunk-text": "^2.0.1",
     "cron": "^2.4.3",
