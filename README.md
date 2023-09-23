@@ -1,4 +1,4 @@
-# bramdroid - a novel discord bot
+# florilegium - the modern commonplace book
 
 ## Modernizing Books
 
