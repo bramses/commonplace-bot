@@ -1,9 +1,33 @@
 import fs from 'fs';
+import { createClient } from "@supabase/supabase-js";
+// import config from "./config.json" assert { "type": "json" };
 
-// lookup title in books.json and return url if found
+import dotenv from "dotenv";
+
+dotenv.config();
+
+const { supabaseUrl, supabaseKey } = process.env;
+
+const supabase = createClient(supabaseUrl, supabaseKey, {
+  auth: {
+    persistSession: false,
+  },
+});
 
 
-const books = JSON.parse(fs.readFileSync('./books.json', 'utf8'));
+
+let books = []
+
+const loadBooks = async () => {
+    const data = await supabase
+        .from('books')
+        .select('*')
+    books = data
+}
+
+(async () => {
+    await loadBooks();
+})()
 
 export const lookupBook = (title) => {
     for (const book of books.books) {
