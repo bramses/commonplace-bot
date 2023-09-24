@@ -29,6 +29,12 @@ for (const folder of commandFolders) {
 	for (const file of commandFiles) {
 		const filePath = path.join(commandsPath, file);
 		const command = await import(filePath);
+
+		if ('TEST' in command && command.TEST && is_production) {
+			console.log(`[WARNING] The command at ${filePath} has TEST set to true and will not be deployed.`);
+			continue;
+		}
+
 		if ('data' in command && 'execute' in command) {
 			commands.push(command.data.toJSON());
 		} else {

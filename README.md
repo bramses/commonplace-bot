@@ -1,4 +1,4 @@
-# florilegium - the modern commonplace book
+# Commoner - a commonplace book in a bot
 
 ## Modernizing Books
 

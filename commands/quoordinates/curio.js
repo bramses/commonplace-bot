@@ -10,6 +10,10 @@ import { randomExport } from "../quoordinates/random.js";
 import { complete } from "../../openai_helper.js";
 import { quosLogic } from "./quos.js";
 import { invocationWorkflow, preWorkflow } from "../../invocation.js";
+import {
+  invocationWorkflowSB,
+  preWorkflowSB,
+} from "../../supabase-invocations.js";
 import { queue, processQueue } from "../../shared-queue.js";
 
 const curioCommand = new SlashCommandBuilder()
@@ -18,24 +22,14 @@ const curioCommand = new SlashCommandBuilder()
 
 export const data = curioCommand;
 
-export async function execute(interaction) {
-  interaction.commandName = "curio";
-  if (!(await preWorkflow(interaction))) {
-    await interaction.reply({
-      content:
-        "You have reached your monthly limit for this command: " +
-        interaction.commandName +
-        ". You can get more invocations by supporting the project [here](https://www.bramadams.dev/discord/)!",
-      ephemeral: true,
-    });
-    return;
-  }
+export const TEST = true;
 
+export async function execute(interaction) {
   // check if in thread -- should not work in thread
   if (interaction.channel.type === ChannelType.PublicThread) {
     await interaction.reply({
       content:
-        "The \`/curio\` command does not work in threads. Please use it in the main channel.",
+        "The `/curio` command does not work in threads. Please use it in the main channel.",
       ephemeral: true,
     });
     return;
@@ -48,6 +42,17 @@ export async function execute(interaction) {
 
   queue.push({
     task: async (user, message) => {
+      interaction.commandName = "curio";
+      if (!(await preWorkflowSB(interaction))) {
+        await interaction.reply({
+          content:
+            "You have reached your monthly limit for this command: " +
+            interaction.commandName +
+            ". You can get more invocations by supporting the project [here](https://www.bramadams.dev/discord/)!",
+          ephemeral: true,
+        });
+        return;
+      }
       // get three random quotes
       // ask user which one they like best
       // show them the quote they picked
@@ -60,7 +65,6 @@ export async function execute(interaction) {
         threeQuotes.push(random);
       }
 
-
       // use openai to generate a question about each quote
       const questions = [];
       for (const quote of threeQuotes) {
@@ -68,11 +72,11 @@ export async function execute(interaction) {
         if (quote.question) {
           question = quote.question;
           console.log("using question from quote " + question);
-        }
-        else question = await complete(
-          `Generate a single question from this quote. The end user cannot see the quote so DO NOT use any abstract concepts like "the speaker" or "the writer" in your question. BE EXPLICIT. DO NOT ASSUME the reader has read the quote. DO NOT use passive voice and do not use passive pronouns like he/she/they/him/her etc. You can use any of who/what/where/when/why. Say nothing else.\n\nQuote:\n\n${quote.text}\n\nQ:`,
-          "gpt-3.5-turbo"
-        );
+        } else
+          question = await complete(
+            `Generate a single question from this quote. The end user cannot see the quote so DO NOT use any abstract concepts like "the speaker" or "the writer" in your question. BE EXPLICIT. DO NOT ASSUME the reader has read the quote. DO NOT use passive voice and do not use passive pronouns like he/she/they/him/her etc. You can use any of who/what/where/when/why. Say nothing else.\n\nQuote:\n\n${quote.text}\n\nQ:`,
+            "gpt-3.5-turbo"
+          );
         questions.push({
           question,
           quote,
@@ -104,7 +108,8 @@ export async function execute(interaction) {
         ephemeral: true,
       });
       interaction.commandName = "curio";
-      await invocationWorkflow(interaction);
+      // await invocationWorkflow(interaction);
+      await invocationWorkflowSB(interaction);
       const filter = (i) => {
         return i.user.id === interaction.user.id;
       };
@@ -151,10 +156,10 @@ export async function execute(interaction) {
                 )
                 .filter((q) => q.length < 2000);
 
-                const startMessage = await interaction.channel.send(
-                  `${question.question}`,
-                );
-                const thread = await startMessage.startThread({
+              const startMessage = await interaction.channel.send(
+                `${question.question}`
+              );
+              const thread = await startMessage.startThread({
                 name: question.question.slice(0, 50) + "...",
                 autoArchiveDuration: 60,
                 type: ChannelType.GUILD_PUBLIC_THREAD,
@@ -193,9 +198,9 @@ export async function execute(interaction) {
                 });
               }
               // link to thread
-              // await invocationWorkflow(i);
               interaction.commandName = "quos";
-              await invocationWorkflow(interaction);
+              // await invocationWorkflow(interaction);
+              await invocationWorkflowSB(interaction, false, question.question);
               await i.editReply({
                 content: `<@${interaction.user.id}>, your \`/quos\` result has been processed: ${thread.url}`,
               });
