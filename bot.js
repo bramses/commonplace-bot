@@ -88,7 +88,7 @@ client.on("ready", () => {
         await channel.send({
           content: `> ${random.text}\n\n-- [${
             random.book.title
-          } (**affiliate link**)](${lookupBook(random.book.title)})`,
+          } (**affiliate link**)](${await lookupBook(random.book.title)})`,
           components: [row],
         });
       } catch (err) {
@@ -289,10 +289,10 @@ client.on(Events.InteractionCreate, async (interaction) => {
               return !interaction.message.content.includes(q.text);
             })
             .map(
-              (q) =>
+              async (q) =>
                 `> ${q.text}\n\n-- ${
-                  lookupBook(q.title)
-                    ? `[${q.title} (**affiliate link**)](${lookupBook(
+                  await lookupBook(q.title)
+                    ? `[${q.title} (**affiliate link**)](${await lookupBook(
                         q.title
                       )})`
                     : q.title
@@ -833,10 +833,10 @@ client.on(Events.InteractionCreate, async (interaction) => {
                   return !messagesContent.some((m) => m.includes(q.text));
                 })
                 .map(
-                  (q) =>
+                  async (q) =>
                     `> ${q.text}\n\n-- ${
-                      lookupBook(q.title)
-                        ? `[${q.title} (**affiliate link**)](${lookupBook(
+                      await lookupBook(q.title)
+                        ? `[${q.title} (**affiliate link**)](${await lookupBook(
                             q.title
                           )})`
                         : q.title
@@ -899,10 +899,10 @@ client.on(Events.InteractionCreate, async (interaction) => {
                 return !interaction.message.content.includes(q.text);
               })
               .map(
-                (q) =>
+                async (q) =>
                   `> ${q.text}\n\n-- ${
-                    lookupBook(q.title)
-                      ? `[${q.title} (**affiliate link**)](${lookupBook(
+                    await lookupBook(q.title)
+                      ? `[${q.title} (**affiliate link**)](${await lookupBook(
                           q.title
                         )})`
                       : q.title

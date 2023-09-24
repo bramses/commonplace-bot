@@ -47,6 +47,8 @@ export const lookupBook = async (title) => {
         return null;
     }
 
+    console.log(data[0].link);
+
     return data[0].link;
 
     // console.log(books.length);

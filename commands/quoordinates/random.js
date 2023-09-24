@@ -130,7 +130,7 @@ export async function execute(interaction) {
         const res = await interaction.channel.send({
           content: `> ${random.text}\n\n-- [${
             random.book.title
-          } (**affiliate link**)](${lookupBook(random.book.title)})`,
+          } (**affiliate link**)](${await lookupBook(random.book.title)})`,
           components: [row],
         });
 

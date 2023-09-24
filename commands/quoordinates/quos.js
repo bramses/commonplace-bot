@@ -82,10 +82,10 @@ export async function execute(interaction) {
 
         const quotes = quoordinate
           .map(
-            (q) =>
+            async (q) =>
               `> ${q.text}\n\n-- ${
-                lookupBook(q.title)
-                  ? `[${q.title} (**affiliate link**)](${lookupBook(q.title)})`
+                await lookupBook(q.title)
+                  ? `[${q.title} (**affiliate link**)](${await lookupBook(q.title)})`
                   : q.title
               }\n\n`
           )

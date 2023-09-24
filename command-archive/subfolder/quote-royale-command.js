@@ -100,10 +100,10 @@ import {
         content: `@${interaction.user.username}, Which quote do you prefer? 
               1.\n> ${incumbent.text}\n\n-- [${
           incumbent.book.title
-        } (**affiliate link**)](${lookupBook(incumbent.book.title)})
+        } (**affiliate link**)](${await lookupBook(incumbent.book.title)})
               2.\n> ${challenger.text}\n\n-- [${
           challenger.book.title
-        } (**affiliate link**)](${lookupBook(challenger.book.title)})`,
+        } (**affiliate link**)](${await lookupBook(challenger.book.title)})`,
         components: [row],
         ephemeral: true,
       });
@@ -112,10 +112,10 @@ import {
         content: `@${interaction.user.username}, Which quote do you prefer? 
               1.\n> ${incumbent.text}\n\n-- [${
           incumbent.book.title
-        } (**affiliate link**)](${lookupBook(incumbent.book.title)})
+        } (**affiliate link**)](${await lookupBook(incumbent.book.title)})
               2.\n> ${challenger.text}\n\n-- [${
           challenger.book.title
-        } (**affiliate link**)](${lookupBook(challenger.book.title)})`,
+        } (**affiliate link**)](${await lookupBook(challenger.book.title)})`,
         components: [row],
         ephemeral: true,
       });

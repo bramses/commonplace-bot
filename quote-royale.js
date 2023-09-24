@@ -47,7 +47,7 @@ const postQuotes = async (channel) => {
     await channel.send({
       content: `> ${quote.text}\n\n-- [${
         quote.book.title
-      } (**affiliate link**)](${lookupBook(quote.book.title)})`,
+      } (**affiliate link**)](${await lookupBook(quote.book.title)})`,
     });
   }
 
@@ -154,7 +154,7 @@ export const quoteRoyale = async (client) => {
     await general.send({
       content: `THE WINNER OF QUOTE ROYALE ${channelDate} IS...\n\n> ${
         winner.quote.text
-      }\n\n-- [${winner.quote.book.title} (**affiliate link**)](${lookupBook(
+      }\n\n-- [${winner.quote.book.title} (**affiliate link**)](${await lookupBook(
         winner.quote.book.title
       )}).
         
@@ -165,7 +165,7 @@ export const quoteRoyale = async (client) => {
     await winnersCircle.send({
       content: `THE WINNER OF QUOTE ROYALE ${channelDate} IS...\n\n> ${
         winner.quote.text
-      }\n\n-- [${winner.quote.book.title} (**affiliate link**)](${lookupBook(
+      }\n\n-- [${winner.quote.book.title} (**affiliate link**)](${await lookupBook(
         winner.quote.book.title
       )}).
         
