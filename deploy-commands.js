@@ -1,18 +1,25 @@
 import { REST, Routes } from 'discord.js';
-import config from './config.json' assert { "type": "json" };
+// import config from './config.json' assert { "type": "json" };
+
+import dotenv from "dotenv";
+
+dotenv.config();
 import fs from 'node:fs';
 import path from 'node:path';
 
 let clientId;
 let token;
-const { guildId, is_production } = config;
+const { guildId, is_production } = process.env;
 
-if (is_production) {
-	clientId = config.clientId;
-	token = config.token;
+console.log(`is_production: ${is_production === "true"}`);
+
+
+if (is_production === "true") {
+	clientId = process.env.clientId;
+	token = process.env.token;
 } else {
-	clientId = config.test_client_id;
-	token = config.test_token;
+	clientId = process.env.test_client_id;
+	token = process.env.test_token;
 	console.log('Using test client ID');
 }
 
@@ -30,7 +37,7 @@ for (const folder of commandFolders) {
 		const filePath = path.join(commandsPath, file);
 		const command = await import(filePath);
 
-		if ('TEST' in command && command.TEST && is_production) {
+		if ('TEST' in command && command.TEST && is_production === "true") {
 			console.log(`[WARNING] The command at ${filePath} has TEST set to true and will not be deployed.`);
 			continue;
 		}

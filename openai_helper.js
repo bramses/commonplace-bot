@@ -1,11 +1,15 @@
 import OpenAI from "openai";
-import config from './config.json' assert { "type": "json" };
+// import config from './config.json' assert { "type": "json" };
 import Filter from 'bad-words';
 
+import dotenv from "dotenv";
+
+dotenv.config();
 
 
 
-const  { OPENAI_API_KEY, OPENAI_API_ORG } = config;
+
+const  { OPENAI_API_KEY, OPENAI_API_ORG } = process.env;
 
 const filter = new Filter();
 

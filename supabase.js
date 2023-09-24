@@ -1,9 +1,13 @@
-import config from "./config.json" assert { "type": "json" };
+// import config from "./config.json" assert { "type": "json" };
 import { createClient } from "@supabase/supabase-js";
 import fs from 'fs';
 
+import dotenv from "dotenv";
 
-const { supabaseUrl, supabaseKey } = config;
+dotenv.config();
+
+
+const { supabaseUrl, supabaseKey } = process.env;
 
 const supabase = createClient(supabaseUrl, supabaseKey, {
   auth: {

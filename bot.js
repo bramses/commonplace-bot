@@ -37,7 +37,10 @@ const client = new Client({
   ],
   partials: [Partials.Message, Partials.Channel, Partials.Reaction],
 });
-import config from "./config.json" assert { "type": "json" };
+// import config from "./config.json" assert { "type": "json" };
+import dotenv from "dotenv";
+
+dotenv.config();
 
 client.on("ready", () => {
   console.log(`Logged in as ${client.user.tag}!`);
@@ -459,7 +462,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
               return;
             }
 
-            const response = await fetch(config.quoordinates_server_share, {
+            const response = await fetch(process.env.quoordinates_server_share, {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
@@ -973,9 +976,9 @@ client.on("guildMemberAdd", (member) => {
   );
 });
 
-if (config.is_production) {
-  client.login(config.token);
+if (process.env.is_production === "true") {
+  client.login(process.env.token);
 } else {
-  client.login(config.test_token);
+  client.login(process.env.test_token);
   console.log("test token");
 }

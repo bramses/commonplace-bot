@@ -1,5 +1,5 @@
 import OpenAI from "openai";
-import config from "../../config.json" assert { "type": "json" };
+// import config from "../../config.json" assert { "type": "json" };
 import { SlashCommandBuilder } from "discord.js";
 import { invocationWorkflow, preWorkflow } from "../../invocation.js";
 import Filter from "bad-words";
@@ -9,7 +9,11 @@ import {
   preWorkflowSB,
 } from "../../supabase-invocations.js";
 
-const { OPENAI_API_KEY } = config;
+import dotenv from "dotenv";
+
+dotenv.config();
+
+const { OPENAI_API_KEY } = process.env;
 
 const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
 

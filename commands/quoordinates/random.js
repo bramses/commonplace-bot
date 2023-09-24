@@ -5,7 +5,7 @@ import {
   ButtonStyle,
   ChannelType,
 } from "discord.js";
-import config from "../../config.json" assert { "type": "json" };
+// import config from "../../config.json" assert { "type": "json" };
 import { lookupBook } from "../../books.js";
 import { preWorkflow, invocationWorkflow } from "../../invocation.js";
 import { processQueue, queue } from "../../shared-queue.js";
@@ -14,7 +14,11 @@ import {
   preWorkflowSB,
 } from "../../supabase-invocations.js";
 
-const { quoordinates_server_random } = config;
+import dotenv from "dotenv";
+
+dotenv.config();
+
+const { quoordinates_server_random } = process.env;
 
 export async function randomExport() {
   try {

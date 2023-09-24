@@ -1,8 +1,12 @@
 import { GuildMember } from "discord.js";
 import { createClient } from "@supabase/supabase-js";
-import config from "./config.json" assert { "type": "json" };
+// import config from "./config.json" assert { "type": "json" };
 
-const { supabaseUrl, supabaseKey } = config;
+import dotenv from "dotenv";
+
+dotenv.config();
+
+const { supabaseUrl, supabaseKey } = process.env;
 
 const supabase = createClient(supabaseUrl, supabaseKey, {
   auth: {
