@@ -24,6 +24,7 @@ const loadBooks = async () => {
   }
 
   books = data.data;
+  return books;
 };
 
 (async () => {
@@ -31,10 +32,16 @@ const loadBooks = async () => {
 })();
 
 export const lookupBook = (title) => {
-  for (const book of books) {
-    if (book.title.toLowerCase() === title.toLowerCase()) {
-      return book.link;
+  try {
+    console.log(books.length);
+    for (const bookIdx of books) {
+      const book = books[bookIdx];
+      if (book.title.toLowerCase() === title.toLowerCase()) {
+        return book.link;
+      }
     }
+    return null;
+  } catch (err) {
+    throw err;
   }
-  return null;
 };
