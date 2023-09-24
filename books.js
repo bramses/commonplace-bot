@@ -13,34 +13,50 @@ const supabase = createClient(supabaseUrl, supabaseKey, {
   },
 });
 
-let books = [];
+// let books = [];
 
-const loadBooks = async () => {
-  const { data, error } = await supabase.from("books").select("*");
+// const loadBooks = async () => {
+//   const { data, error } = await supabase.from("books").select("*");
 
-  if (error) {
-    console.log(error);
-    return;
-  }
+//   if (error) {
+//     console.log(error);
+//     return;
+//   }
 
-  books = data.data;
-  return books;
-};
+//   books = data.data;
+//   return books;
+// };
 
-(async () => {
-  await loadBooks();
-})();
+// (async () => {
+//   await loadBooks();
+// })();
 
-export const lookupBook = (title) => {
+export const lookupBook = async (title) => {
   try {
-    console.log(books.length);
-    for (const bookIdx of books) {
-      const book = books[bookIdx];
-      if (book.title.toLowerCase() === title.toLowerCase()) {
-        return book.link;
-      }
+    const { data, error } = await supabase
+      .from("books")
+      .select("*")
+      .ilike("title", `%${title}%`);
+
+    if (error) {
+        console.log(error);
+        return;
+        }
+
+    if (data.length === 0) {
+        return null;
     }
-    return null;
+
+    return data[0].link;
+
+    // console.log(books.length);
+    // for (const bookIdx of books) {
+    //   const book = books[bookIdx];
+    //   if (book.title.toLowerCase() === title.toLowerCase()) {
+    //     return book.link;
+    //   }
+    // }
+    // return null;
   } catch (err) {
     throw err;
   }
