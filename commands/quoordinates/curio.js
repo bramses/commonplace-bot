@@ -99,7 +99,7 @@ export async function execute(interaction) {
       );
       const msg = await interaction.followUp({
         content:
-          "**Which question are you curious about**?\n\n" +
+          `<@${interaction.user.id}>, **which question are you curious about**?\n\n` +
           questions
             .map((q, i) => `\n\n${i + 1}. ${q.question}`.trim())
             .join("\n"),
