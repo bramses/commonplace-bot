@@ -13,27 +13,28 @@ const supabase = createClient(supabaseUrl, supabaseKey, {
   },
 });
 
-
-
-let books = []
+let books = [];
 
 const loadBooks = async () => {
-    const data = await supabase
-        .from('books')
-        .select('*')
-    books = data
-}
+  const { data, error } = await supabase.from("books").select("*");
+
+  if (error) {
+    console.log(error);
+    return;
+  }
+
+  books = data.data;
+};
 
 (async () => {
-    await loadBooks();
-    console.log(books);
-})()
+  await loadBooks();
+})();
 
 export const lookupBook = (title) => {
-    for (const book of books) {
-        if (book.title.toLowerCase() === (title.toLowerCase())) {
-            return book.link;
-        }
+  for (const book of books) {
+    if (book.title.toLowerCase() === title.toLowerCase()) {
+      return book.link;
     }
-    return null;
-}
+  }
+  return null;
+};
