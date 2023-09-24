@@ -31,7 +31,6 @@ export async function quosLogic(query) {
     body: JSON.stringify({ query }),
   });
   const json = await response.json();
-  console.log(json);
   return json;
 }
 

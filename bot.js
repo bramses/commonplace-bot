@@ -291,7 +291,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
             .map(
               async (q) =>
                 `> ${q.text}\n\n-- ${
-                  await lookupBook(q.title)
+                  (await lookupBook(q.title))
                     ? `[${q.title} (**affiliate link**)](${await lookupBook(
                         q.title
                       )})`
@@ -462,13 +462,16 @@ client.on(Events.InteractionCreate, async (interaction) => {
               return;
             }
 
-            const response = await fetch(process.env.quoordinates_server_share, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({ text: userInput, url: imageUrl }),
-            });
+            const response = await fetch(
+              process.env.quoordinates_server_share,
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ text: userInput, url: imageUrl }),
+              }
+            );
             const json = await response.json();
 
             const shareUrl = json.result;
@@ -787,7 +790,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
             return;
           }
           const similarQuos = await quosLogic(interaction.message.content);
-          console.log(similarQuos);
 
           const makeAart = new ButtonBuilder()
             .setCustomId("aart_btn")
@@ -824,46 +826,27 @@ client.on(Events.InteractionCreate, async (interaction) => {
               const messages = await thread.messages.fetch();
               const messagesContent = messages.map((m) => m.content);
 
-              // const quotes = similarQuos
-              //   .filter((q) => {
-              //     return !interaction.message.content.includes(q.text);
-              //   })
-              //   .filter((q) => {
-              //     // q.text is the quote should not be in any of the messages from messagesContent
-              //     return !messagesContent.some((m) => m.includes(q.text));
-              //   })
-              //   .map(
-              //     async (q) =>
-              //       `> ${q.text}\n\n-- ${
-              //         await lookupBook(q.title)
-              //           ? `[${q.title} (**affiliate link**)](${await lookupBook(
-              //               q.title
-              //             )})`
-              //           : q.title
-              //       }\n\n`
-              //   )
-              //   .filter((q) => q.length < 2000);
-              // // append quotes to thread
-
-              const quotesPromises = similarQuos.map(async (q) => {
-                const bookLink = await lookupBook(q.title);
-                const quote = `> ${q.text}\n\n-- ${
-                  bookLink ? `[${q.title} (**affiliate link**)](${bookLink})` : q.title
-                }\n\n`;
-                return quote.length < 2000 && !interaction.message.content.includes(q.text) ? quote : null;
-              });
-              
-              const quotes = (await Promise.all(quotesPromises)).filter(Boolean);
-  
-              for (const quote of quotes) {
-                await thread.send({
-                  content: quote,
-                  components: [row],
+              const quotesPromises = similarQuos
+                .filter((q) => {
+                  return !interaction.message.content.includes(q.text);
+                })
+                .filter((q) => {
+                  // q.text is the quote should not be in any of the messages from messagesContent
+                  return !messagesContent.some((m) => m.includes(q.text));
+                })
+                .map(async (q) => {
+                  const bookLink = await lookupBook(q.title);
+                  const quote = `> ${q.text}\n\n-- ${
+                    bookLink
+                      ? `[${q.title} (**affiliate link**)](${bookLink})`
+                      : q.title
+                  }\n\n`;
+                  return quote.length < 2000 ? quote : null;
                 });
-              }
-  
-              interaction.commandName = "delve";
-              await invocationWorkflowSB(interaction, true);
+
+              const quotes = (await Promise.all(quotesPromises)).filter(
+                Boolean
+              );
 
               let firstQuote = null;
 
@@ -914,38 +897,37 @@ client.on(Events.InteractionCreate, async (interaction) => {
               reason: "Sending quotes as separate messages in one thread",
             });
 
-            // const quotes = similarQuos
-            //   .filter((q) => {
-            //     return !interaction.message.content.includes(q.text);
-            //   })
-            //   .map(
-            //     async (q) =>
-            //       `> ${q.text}\n\n-- ${
-            //         await lookupBook(q.title)
-            //           ? `[${q.title} (**affiliate link**)](${await lookupBook(
-            //               q.title
-            //             )})`
-            //           : q.title
-            //       }\n\n`
-            //   )
-            //   .filter((q) => q.length < 2000);
-            // // append quotes to thread
 
-            const quotesPromises = similarQuos.map(async (q) => {
-              const bookLink = await lookupBook(q.title);
-              const quote = `> ${q.text}\n\n-- ${
-                bookLink ? `[${q.title} (**affiliate link**)](${bookLink})` : q.title
-              }\n\n`;
-              return quote.length < 2000 && !interaction.message.content.includes(q.text) ? quote : null;
-            });
-            
+
+            const quotesPromises = similarQuos
+              .filter((q) => {
+                return !interaction.message.content.includes(q.text);
+              })
+              .map(async (q) => {
+                const bookLink = await lookupBook(q.title);
+                const quote = `> ${q.text}\n\n-- ${
+                  bookLink
+                    ? `[${q.title} (**affiliate link**)](${bookLink})`
+                    : q.title
+                }\n\n`;
+                return quote.length < 2000 ? quote : null;
+              })
+
             const quotes = (await Promise.all(quotesPromises)).filter(Boolean);
 
-            for (const quote of quotes) {
+
+            if (quotes.length === 0) {
               await thread.send({
-                content: quote,
-                components: [row],
+                content: "No more quotes found!",
+                components: [],
               });
+            } else {
+              for (const quote of quotes) {
+                await thread.send({
+                  content: quote,
+                  components: [row],
+                });
+              }
             }
 
             interaction.commandName = "delve";
