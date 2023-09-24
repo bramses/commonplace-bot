@@ -1,4 +1,3 @@
-import fs from 'fs';
 import { createClient } from "@supabase/supabase-js";
 // import config from "./config.json" assert { "type": "json" };
 
@@ -27,10 +26,11 @@ const loadBooks = async () => {
 
 (async () => {
     await loadBooks();
+    console.log(books);
 })()
 
 export const lookupBook = (title) => {
-    for (const book of books.books) {
+    for (const book of books) {
         if (book.title.toLowerCase() === (title.toLowerCase())) {
             return book.link;
         }

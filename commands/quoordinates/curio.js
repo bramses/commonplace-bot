@@ -22,7 +22,7 @@ const curioCommand = new SlashCommandBuilder()
 
 export const data = curioCommand;
 
-export const TEST = true;
+export const TEST = false;
 
 export async function execute(interaction) {
   // check if in thread -- should not work in thread
