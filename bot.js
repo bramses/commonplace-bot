@@ -190,7 +190,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
           const res = await interaction.followUp(summary);
           interaction.commandName = "summarize";
-          await invocationWorkflow(interaction, true);
+          await invocationWorkflowSB(interaction, true);
 
           await message.edit({
             content: `<@${user}>, your \`/tldr\` request has been processed! Link: ${res.url}`,
@@ -521,7 +521,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
       });
 
       interaction.commandName = "cloze_deletion";
-      await invocationWorkflow(interaction, true);
+      await invocationWorkflowSB(interaction, true);
     } else if (interaction.customId === "repost") {
       interaction.commandName = "repost";
       if (!(await preWorkflow(interaction))) {
@@ -766,7 +766,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
       });
 
       interaction.commandName = "repost";
-      await invocationWorkflow(interaction, true);
+      await invocationWorkflowSB(interaction, true);
     } else if (interaction.customId === "quos_learn_more") {
       const sentMessage = await interaction.reply({
         content: `<@${interaction.user.id}>, your request has been added to the queue.`,
