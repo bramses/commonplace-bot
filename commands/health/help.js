@@ -23,17 +23,17 @@ export async function execute(interaction) {
   
 ## Slash Commands
 
-- \`/quos\` - Find quotes based on your search query. The algorithm is semantic, so if it can't find anything, it will return something that is similar. Try asking questions like "what is the philosophy of the tech industry" or even declarative statements like "Napoleon was first given the rank of general in Italy". If you don't know what to search, try the \`/random\` command and then \`delve\` into any topic that takes your eye. Costs 1 \`quos\` credit.
+- \`/search\` - Find quotes based on your search query. The algorithm is semantic, so if it can't find anything, it will return something that is similar. 
 - \`/random\` - Fetch a random quote from the library. Costs 1 \`random\` credit.
-- \`/aart\` - Creates an abstract image and art prompt that can be copied into MJ of DALL-E or whatever based on input. Costs 1 \`aart\` credit.
+- \`/draw\` - Creates an abstract image and art prompt that can be copied into MJ of DALL-E or whatever based on input. Costs 1 \`draw\` credit.
+- \`/wander\` - Wander with a guide through the library of Commonplace Bot. Costs 1 \`wander\` credit.
 
 
 ## Buttons
-- \`aart\` - (see above)
+- \`draw\` - (see above)
 - \`delve\` - Delve deeper into the quotes main ideas, explore its neighbors. Costs 1 \`delve\` credit.
 - \`tldr\` - Summarize the quote. Really great when the quote is long but you want the general idea. Costs 1 \`tldr\` credit.
-- \`share\` - Share the quote by overlaying the quote text onto an \`aart\` creation. Every time is unique! Costs 1 \`share\` credit.
-- \`repost\` - Repost the quote to a more fitting channel. Costs 1 \`repost\` credit. Only available from the \`/random\` command.
+- \`share\` - Share the quote by overlaying the quote text onto an \`draw\` creation. Every time is unique! Costs 1 \`share\` credit.
 
 ## Other Commands
 

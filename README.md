@@ -135,7 +135,7 @@ Let pure randomness guide your reading experience. Commonplace Bot will pick a r
 ![Screenshot 2023-09-17 18-59-04](https://github.com/bramses/bramdroid/assets/3282661/ac0fa2c9-e49d-4dc9-8ffc-9ac49867ed58)
 
 
-#### `/quos`
+#### `/search`
 
 Power user command to search the database directly for quotes. This is the equivalent of going up to the librarian and asking them to find you a book on a specific topic. Commonplace Bot will find the quotes that are most similar to the query you give it, and display them to you. This is akin to a breadth-first search of the latent space of the LLM. The matches will rarely be an "exact" match, but this is because the database does not have **all** information, it has **curated** information.
 

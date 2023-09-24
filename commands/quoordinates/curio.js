@@ -150,7 +150,7 @@ export async function execute(interaction) {
 
           queue.push({
             task: async (user, message) => {
-              i.commandName = "quos";
+              i.commandName = "search";
 
               if (!(await preWorkflowSB(i))) {
                 await i.editReply({
@@ -165,20 +165,7 @@ export async function execute(interaction) {
               const question =
                 questions[parseInt(i.customId.split("_")[3]) - 1];
               const quoordinate = await quosLogic(question.question);
-              // const quotes = await quoordinate
-              //   .map(
-              //     async (q) =>
-              //       `> ${q.text}\n\n-- ${
-              //         await lookupBook(q.title)
-              //           ? `[${q.title} (**affiliate link**)](${await lookupBook(
-              //               q.title
-              //             )})`
-              //           : q.title
-              //       }\n\n`
-              //   )
-              //   .filter((q) => q.length < 2000);
 
-              // console.log("quotes", quotes);
 
               const quotesPromises = quoordinate.map(async (q) => {
                 const bookLink = await lookupBook(q.title);
@@ -232,7 +219,7 @@ export async function execute(interaction) {
                 });
               }
               // link to thread
-              i.commandName = "quos";
+              i.commandName = "search";
               // await invocationWorkflow(interaction);
               await invocationWorkflowSB(i, false, question.question);
               await i.editReply({
