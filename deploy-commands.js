@@ -42,18 +42,6 @@ for (const folder of commandFolders) {
 
 		if ('data' in command && 'execute' in command) {
 			commands.push(command.data.toJSON());
-			// if (is_production === "false") {
-			// 	permissions.push({
-			// 		id: command.data.toJSON().name,
-			// 		permissions: [
-			// 			{
-			// 				id: '1144620340509675541',
-			// 				type: 'CHANNEL',
-			// 				permission: true,
-			// 			},
-			// 		],
-			// 	});
-			// }
 		} else {
 			console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
 		}
@@ -73,18 +61,7 @@ const rest = new REST().setToken(token);
 			Routes.applicationGuildCommands(clientId, guildId),
 			{ body: commands },
 		);
-
-		// if (is_production === "false") {
-		// 	console.log(`Started refreshing ${permissions.length} application (/) permissions.`);
-		// 	console.log(permissions);
-		// 	await rest.put(
-		// 		Routes.guildApplicationCommandsPermissions(clientId, guildId),
-		// 		{ body: permissions },
-		// 	  );
-
-		// }
 		
-
 		console.log(`Successfully reloaded ${data.length} application (/) commands.`);
 	} catch (error) {
 		// And of course, make sure you catch and log any errors!
