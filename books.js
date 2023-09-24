@@ -47,18 +47,8 @@ export const lookupBook = async (title) => {
         return null;
     }
 
-    console.log(data[0].link);
-
     return data[0].link;
 
-    // console.log(books.length);
-    // for (const bookIdx of books) {
-    //   const book = books[bookIdx];
-    //   if (book.title.toLowerCase() === title.toLowerCase()) {
-    //     return book.link;
-    //   }
-    // }
-    // return null;
   } catch (err) {
     throw err;
   }

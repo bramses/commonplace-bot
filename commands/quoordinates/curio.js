@@ -129,9 +129,6 @@ export async function execute(interaction) {
           i.customId === "curio__question_2" ||
           i.customId === "curio__question_3"
         ) {
-          // await i.deferReply({
-          //   ephemeral: true,
-          // });
 
           const collectorMsgQueue = await i.reply({
             content: `<@${i.user.id}>, your request has been added to the queue.`,
@@ -141,7 +138,7 @@ export async function execute(interaction) {
           queue.push({
             task: async (user, message) => {
               i.commandName = "quos";
-              console.log("curio command name: " + i.commandName);
+
               if (!(await preWorkflowSB(i))) {
                 await i.editReply({
                   content:
@@ -155,18 +152,30 @@ export async function execute(interaction) {
               const question =
                 questions[parseInt(i.customId.split("_")[3]) - 1];
               const quoordinate = await quosLogic(question.question);
-              const quotes = quoordinate
-                .map(
-                  async (q) =>
-                    `> ${q.text}\n\n-- ${
-                      await lookupBook(q.title)
-                        ? `[${q.title} (**affiliate link**)](${await lookupBook(
-                            q.title
-                          )})`
-                        : q.title
-                    }\n\n`
-                )
-                .filter((q) => q.length < 2000);
+              // const quotes = await quoordinate
+              //   .map(
+              //     async (q) =>
+              //       `> ${q.text}\n\n-- ${
+              //         await lookupBook(q.title)
+              //           ? `[${q.title} (**affiliate link**)](${await lookupBook(
+              //               q.title
+              //             )})`
+              //           : q.title
+              //       }\n\n`
+              //   )
+              //   .filter((q) => q.length < 2000);
+
+              // console.log("quotes", quotes);
+
+              const quotesPromises = quoordinate.map(async (q) => {
+                const bookLink = await lookupBook(q.title);
+                const quote = `> ${q.text}\n\n-- ${
+                  bookLink ? `[${q.title} (**affiliate link**)](${bookLink})` : q.title
+                }\n\n`;
+                return quote.length < 2000 ? quote : null;
+              });
+              
+              const quotes = (await Promise.all(quotesPromises)).filter(Boolean);
 
               const startMessage = await interaction.channel.send(
                 `${question.question}`

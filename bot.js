@@ -824,26 +824,46 @@ client.on(Events.InteractionCreate, async (interaction) => {
               const messages = await thread.messages.fetch();
               const messagesContent = messages.map((m) => m.content);
 
-              const quotes = similarQuos
-                .filter((q) => {
-                  return !interaction.message.content.includes(q.text);
-                })
-                .filter((q) => {
-                  // q.text is the quote should not be in any of the messages from messagesContent
-                  return !messagesContent.some((m) => m.includes(q.text));
-                })
-                .map(
-                  async (q) =>
-                    `> ${q.text}\n\n-- ${
-                      await lookupBook(q.title)
-                        ? `[${q.title} (**affiliate link**)](${await lookupBook(
-                            q.title
-                          )})`
-                        : q.title
-                    }\n\n`
-                )
-                .filter((q) => q.length < 2000);
-              // append quotes to thread
+              // const quotes = similarQuos
+              //   .filter((q) => {
+              //     return !interaction.message.content.includes(q.text);
+              //   })
+              //   .filter((q) => {
+              //     // q.text is the quote should not be in any of the messages from messagesContent
+              //     return !messagesContent.some((m) => m.includes(q.text));
+              //   })
+              //   .map(
+              //     async (q) =>
+              //       `> ${q.text}\n\n-- ${
+              //         await lookupBook(q.title)
+              //           ? `[${q.title} (**affiliate link**)](${await lookupBook(
+              //               q.title
+              //             )})`
+              //           : q.title
+              //       }\n\n`
+              //   )
+              //   .filter((q) => q.length < 2000);
+              // // append quotes to thread
+
+              const quotesPromises = similarQuos.map(async (q) => {
+                const bookLink = await lookupBook(q.title);
+                const quote = `> ${q.text}\n\n-- ${
+                  bookLink ? `[${q.title} (**affiliate link**)](${bookLink})` : q.title
+                }\n\n`;
+                return quote.length < 2000 && !interaction.message.content.includes(q.text) ? quote : null;
+              });
+              
+              const quotes = (await Promise.all(quotesPromises)).filter(Boolean);
+  
+              for (const quote of quotes) {
+                await thread.send({
+                  content: quote,
+                  components: [row],
+                });
+              }
+  
+              interaction.commandName = "delve";
+              await invocationWorkflowSB(interaction, true);
 
               let firstQuote = null;
 
@@ -894,22 +914,32 @@ client.on(Events.InteractionCreate, async (interaction) => {
               reason: "Sending quotes as separate messages in one thread",
             });
 
-            const quotes = similarQuos
-              .filter((q) => {
-                return !interaction.message.content.includes(q.text);
-              })
-              .map(
-                async (q) =>
-                  `> ${q.text}\n\n-- ${
-                    await lookupBook(q.title)
-                      ? `[${q.title} (**affiliate link**)](${await lookupBook(
-                          q.title
-                        )})`
-                      : q.title
-                  }\n\n`
-              )
-              .filter((q) => q.length < 2000);
-            // append quotes to thread
+            // const quotes = similarQuos
+            //   .filter((q) => {
+            //     return !interaction.message.content.includes(q.text);
+            //   })
+            //   .map(
+            //     async (q) =>
+            //       `> ${q.text}\n\n-- ${
+            //         await lookupBook(q.title)
+            //           ? `[${q.title} (**affiliate link**)](${await lookupBook(
+            //               q.title
+            //             )})`
+            //           : q.title
+            //       }\n\n`
+            //   )
+            //   .filter((q) => q.length < 2000);
+            // // append quotes to thread
+
+            const quotesPromises = similarQuos.map(async (q) => {
+              const bookLink = await lookupBook(q.title);
+              const quote = `> ${q.text}\n\n-- ${
+                bookLink ? `[${q.title} (**affiliate link**)](${bookLink})` : q.title
+              }\n\n`;
+              return quote.length < 2000 && !interaction.message.content.includes(q.text) ? quote : null;
+            });
+            
+            const quotes = (await Promise.all(quotesPromises)).filter(Boolean);
 
             for (const quote of quotes) {
               await thread.send({

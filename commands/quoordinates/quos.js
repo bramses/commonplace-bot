@@ -80,16 +80,26 @@ export async function execute(interaction) {
         const userInput = interaction.options.getString("input");
         const quoordinate = await quosLogic(userInput);
 
-        const quotes = quoordinate
-          .map(
-            async (q) =>
-              `> ${q.text}\n\n-- ${
-                await lookupBook(q.title)
-                  ? `[${q.title} (**affiliate link**)](${await lookupBook(q.title)})`
-                  : q.title
-              }\n\n`
-          )
-          .filter((q) => q.length < 2000); // still filtering out quotes that are too long because the UX is bad but logic is in conditional below "logic for splitting quotes into multiple messages"
+        // const quotes = quoordinate
+        //   .map(
+        //     async (q) =>
+        //       `> ${q.text}\n\n-- ${
+        //         await lookupBook(q.title)
+        //           ? `[${q.title} (**affiliate link**)](${await lookupBook(q.title)})`
+        //           : q.title
+        //       }\n\n`
+        //   )
+        //   .filter((q) => q.length < 2000); // still filtering out quotes that are too long because the UX is bad but logic is in conditional below "logic for splitting quotes into multiple messages"
+
+        const quotesPromises = quoordinate.map(async (q) => {
+          const bookLink = await lookupBook(q.title);
+          const quote = `> ${q.text}\n\n-- ${
+            bookLink ? `[${q.title} (**affiliate link**)](${bookLink})` : q.title
+          }\n\n`;
+          return quote.length < 2000 ? quote : null;
+        });
+        
+        const quotes = (await Promise.all(quotesPromises)).filter(Boolean);
 
         const startMessage = await interaction.channel.send(
           `**Question:** ${userInput}`
