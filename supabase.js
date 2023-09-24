@@ -104,51 +104,6 @@ const jsonToCsvBooks = (filename) => {
     return csv
 }
 
-/*
-{
-    "aart" : {
-        "free": 3,
-        "member": 20,
-        "paid": 50
-    },
-    "quos" : {
-        "free": 3,
-        "member": 20,
-        "paid": 50
-    },
-    "curio" : {
-        "free": 3,
-        "member": 20,
-        "paid": 50
-    },
-    "random" : {
-        "free": 3,
-        "member": 20,
-        "paid": 50
-    },
-    "repost": {
-        "free": 3,
-        "member": 20,
-        "paid": 50
-    },
-    "summarize": {
-        "free": 3,
-        "member": 20,
-        "paid": 50
-    },
-    "share": {
-        "free": 3,
-        "member": 20,
-        "paid": 50
-    },
-    "delve": {
-        "free": 3,
-        "member": 20,
-        "paid": 50
-    }
-}
-*/
-
 const jsonToCsvCommandLimts = (filename) => {
     const data = fs.readFileSync(filename, "utf8");
     const json = JSON.parse(data)

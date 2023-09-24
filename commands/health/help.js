@@ -1,13 +1,25 @@
-import { SlashCommandBuilder } from 'discord.js';
+import { SlashCommandBuilder, PermissionFlagsBits } from "discord.js";
+import dotenv from "dotenv";
 
-const pingCommand = new SlashCommandBuilder()
-  .setName('help')
-  .setDescription('How to use Bramdroid');
+dotenv.config();
 
-export const data = pingCommand;
+let helpCommand;
+
+if (process.env.is_production === "true") {
+  helpCommand = new SlashCommandBuilder()
+    .setName("help")
+    .setDescription("How to use Commonplace Bot");
+} else {
+  helpCommand = new SlashCommandBuilder()
+    .setName("help")
+    .setDescription("How to use Commonplace Bot")
+    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator);
+}
+
+export const data = helpCommand;
 
 export async function execute(interaction) {
-  await interaction.reply(`**Bramdroid** is a bot that serves this Discord as a librarian, gallery curator, artist, games master and more!
+  await interaction.reply(`**Commonplace Bot** is a bot that serves this Discord as a librarian, gallery curator, artist, games master and more!
   
 ## Slash Commands
 
@@ -33,7 +45,7 @@ Visit the #quote-royale channel to participate in the Quote Royale! Every day, 5
 
 ## Open Source
 
-Bramdroid is open source! You can see the bot source code here: <https://github.com/bramses/bramdroid>
+Commonplace Bot is open source! You can see the bot source code here: <https://github.com/bramses/bramdroid>
 
 Read more at <https://www.bramadams.dev/discord/> or ping @bramses`);
 }

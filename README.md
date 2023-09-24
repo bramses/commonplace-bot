@@ -1,4 +1,4 @@
-# Commoner - a commonplace book in a bot
+# Commonplace Bot - the modern commonplace book
 
 ## Modernizing Books
 
@@ -10,7 +10,7 @@ To answer these questions, we need to talk about the current landscape of readin
 
 ### The Landscapes
 
-To understand the value of Bramdroid, it is important to understand the current landscape of reading and computation.
+To understand the value of Commonplace Bot, it is important to understand the current landscape of reading and computation.
 
 #### Books
 
@@ -68,15 +68,15 @@ The Large Language Models of today are really good at spatial reasoning. They ar
 
 **Transformation** is the act of taking a piece of text, and transforming it into something else. This something else can be visual (images, videos, etc.), mathematical (code) or textual (a summary, a translation, a poem etc.), or even educational (a quiz, a test, etc.). Basically, the LLM can take in a piece of text, and then output something that is related to that text. This is a huge breakthrough, because it allows us to create a feedback loop between the reader and the book. The reader can now interact with the book in a meaningful way, and the book can respond to the reader in a meaningful way. This is the first time in history that this has been possible.
 
-Modern LLMs have two large constraints: hallucinations and context windows. Hallucinations are when the LLM generates text that is not related to the text that it was trained on. Context windows are the amount of text that the LLM can take in at once. These constraints are important to understand, because they are the reason why LLMs are not perfect. This leads us to talking about why Bramdroid uses quotes.
+Modern LLMs have two large constraints: hallucinations and context windows. Hallucinations are when the LLM generates text that is not related to the text that it was trained on. Context windows are the amount of text that the LLM can take in at once. These constraints are important to understand, because they are the reason why LLMs are not perfect. This leads us to talking about why Commonplace Bot uses quotes.
 
 #### Where Does This Leave Us?
 
 So that's the broad story as it pertains to books and computation. Book technology for dissemination has changed drastically over the centuries thanks to the printing press and the Internet, but curation and the reading process have stayed relatively untouched. People still rely on word of mouth or stumbling upon books at a bookstore. Reading is done silently, the information is inefficiently stored in the mind of the reader, and recall is not guaranteed. Computer science has created novel ways to store and retrieve information, but has not been applied to books and libraries. LLMs have created novel ways to understand information, but have constraints that make them imperfect. 
 
-With all of this in mind, let's talk about Bramdroid.
+With all of this in mind, let's talk about Commonplace Bot.
 
-## Bramdroid
+## Commonplace Bot
 
 At the start of this essay, we asked the question: how can we add the newest technologies of computation be used to evolve reading without cheapening the experience of reading? How can we modernize books without losing the value that they have offered for so long? By examining the landscape of available technologies and the history of books, we can now attempt to answer these questions.
 
@@ -90,19 +90,19 @@ No matter what the technology is or represents, we must be able to:
 
 At the individual level (pre-computer), the way to achieve all of these goals was a combination of a personal bookshelf, a society trained in literacy that values books, a local library, a commonplace book to write notes in from the books read, and a brain that could use the best information from books consumed to produce new material (kind of like using oxygen as raw material for ATP).
 
-Bramdroid is my version of what this may look like in the future...today! Let's go through each of the goals above and see how Bramdroid achieves them.
+Commonplace Bot is my version of what this may look like in the future...today! Let's go through each of the goals above and see how Commonplace Bot achieves them.
 
 ### A High Level Overview
 
-A list of high quality books has been met many times over by the efforts of authors over the centuries who have poured blood sweat and tears into making comprehensive tomes of knowledge. Hopefully this stays the case for the foreseeable future, but this is not something that Bramdroid can control, and perhaps even is a boon, which will be discussed soon.
+A list of high quality books has been met many times over by the efforts of authors over the centuries who have poured blood sweat and tears into making comprehensive tomes of knowledge. Hopefully this stays the case for the foreseeable future, but this is not something that Commonplace Bot can control, and perhaps even is a boon, which will be discussed soon.
 
-Storing and retrieving books at scale is theoretically something that Bramdroid can do, but it is not the main focus of Bramdroid. Bramdroid is not a database of raw books chunked at the paragraph level, it is a database of quotes. This is a very important distinction, and will be discussed in detail later.
+Storing and retrieving books at scale is theoretically something that Commonplace Bot can do, but it is not the main focus of Commonplace Bot. Commonplace Bot is not a database of raw books chunked at the paragraph level, it is a database of quotes. This is a very important distinction, and will be discussed in detail later.
 
-Leveraging context to make curation decisions at the individual level and community level is the main focus of Bramdroid. Bramdroid is a bot that is meant to be used in a Discord server. This means that Bramdroid can leverage the context of the server to make curation decisions at the community level. Each user that interfaces with Bramdroid has a semi-unique experience that mirrors what one might expect in a library. You walk around, peek at some random shelves, go to a section that interests you and read the back covers of any book that catches your eye. However, every time you uncover one book in fact you are referencing an idea directly, and all the books with that idea will also surface. These ideas trigger new searches that are context dependent and on and on and on. This is a feedback loop that is not possible in a traditional library, and is a huge advantage of Bramdroid.
+Leveraging context to make curation decisions at the individual level and community level is the main focus of Commonplace Bot. Commonplace Bot is a bot that is meant to be used in a Discord server. This means that Commonplace Bot can leverage the context of the server to make curation decisions at the community level. Each user that interfaces with Commonplace Bot has a semi-unique experience that mirrors what one might expect in a library. You walk around, peek at some random shelves, go to a section that interests you and read the back covers of any book that catches your eye. However, every time you uncover one book in fact you are referencing an idea directly, and all the books with that idea will also surface. These ideas trigger new searches that are context dependent and on and on and on. This is a feedback loop that is not possible in a traditional library, and is a huge advantage of Commonplace Bot.
 
 Healthy reader engagement is achieved thanks to services like Readwise and Obsidian. By being able to capture quotes in a centralized location, and then being able to transform those quotes into other forms of information, we can create a feedback loop between the reader and the book. This is the first time in history that this has been possible. We can not only extricate highlights from books, we can leverage those highlights as independent data points to inform future reading decisions, as well as increase the likelihood of recall.
 
-Finally, transformation is the act of converting a quote as data through a function into another form. This form could be a quiz, an image, a video, a script for a movie, a research paper, a sculpture, whatever! The sky really is the limit! In Bramdroid, I rely heavily on the example of turning book quotes into unique generative art piece. This will be discussed in the `aart` and `share` sections. 
+Finally, transformation is the act of converting a quote as data through a function into another form. This form could be a quiz, an image, a video, a script for a movie, a research paper, a sculpture, whatever! The sky really is the limit! In Commonplace Bot, I rely heavily on the example of turning book quotes into unique generative art piece. This will be discussed in the `aart` and `share` sections. 
 
 ### Quotes
 
@@ -117,11 +117,11 @@ New features are added all the time as creativity strikes and as my reading expe
 
 ### Slash Commands
 
-#### `/curio`
+#### `/wander`
 
-1. Bramdroid will ask you three questions from random quotes.
+1. Commonplace Bot will ask you three questions from random quotes.
 2. You pick the question that you think is the most interesting and piques your curiosity.
-3. Bramdroid will run the `/quos` command (below) on the question you picked.
+3. Commonplace Bot will run the `/quos` command (below) on the question you picked.
 
 ![Screenshot 2023-09-17 18-54-29](https://github.com/bramses/bramdroid/assets/3282661/0edf94d7-a91c-426c-874f-0d23efcb759e)
 ![Screenshot 2023-09-17 18-55-14](https://github.com/bramses/bramdroid/assets/3282661/d8c7e213-d72d-43ce-b583-57837e3b566e)
@@ -130,14 +130,14 @@ New features are added all the time as creativity strikes and as my reading expe
 
 #### `/random`
 
-Let pure randomness guide your reading experience. Bramdroid will pick a random quote from the database and display it to you. This is equivalent to picking a random book off of a bookshelf and reading a random page.
+Let pure randomness guide your reading experience. Commonplace Bot will pick a random quote from the database and display it to you. This is equivalent to picking a random book off of a bookshelf and reading a random page.
 
 ![Screenshot 2023-09-17 18-59-04](https://github.com/bramses/bramdroid/assets/3282661/ac0fa2c9-e49d-4dc9-8ffc-9ac49867ed58)
 
 
 #### `/quos`
 
-Power user command to search the database directly for quotes. This is the equivalent of going up to the librarian and asking them to find you a book on a specific topic. Bramdroid will find the quotes that are most similar to the query you give it, and display them to you. This is akin to a breadth-first search of the latent space of the LLM. The matches will rarely be an "exact" match, but this is because the database does not have **all** information, it has **curated** information.
+Power user command to search the database directly for quotes. This is the equivalent of going up to the librarian and asking them to find you a book on a specific topic. Commonplace Bot will find the quotes that are most similar to the query you give it, and display them to you. This is akin to a breadth-first search of the latent space of the LLM. The matches will rarely be an "exact" match, but this is because the database does not have **all** information, it has **curated** information.
 
 ![Screenshot 2023-09-17 19-06-41](https://github.com/bramses/bramdroid/assets/3282661/2a51428d-ef44-4f29-91db-73d001ae7cb8)
 ![Screenshot 2023-09-17 19-07-10](https://github.com/bramses/bramdroid/assets/3282661/7eb724ef-33a6-4c63-bf7c-50bd43402c40)
@@ -154,7 +154,7 @@ Will display a help message with all the commands and their descriptions.
 
 #### `delve`
 
-Above in the reading section we discussed the importance of being able to have complete context to make a good curation choice. The `delve` button interaction allows you to do just that. When you click the `delve` button, Bramdroid will find similar quotes about the same topic, and display them to you. This allows you to make a more informed decision about whether or not you want to add the quote to your collection, as well as see multiple books that may share the same concept. This is akin to a depth-first search of the latent space of the LLM.
+Above in the reading section we discussed the importance of being able to have complete context to make a good curation choice. The `delve` button interaction allows you to do just that. When you click the `delve` button, Commonplace Bot will find similar quotes about the same topic, and display them to you. This allows you to make a more informed decision about whether or not you want to add the quote to your collection, as well as see multiple books that may share the same concept. This is akin to a depth-first search of the latent space of the LLM.
 
 ![Screenshot 2023-09-17 18-59-18](https://github.com/bramses/bramdroid/assets/3282661/16533d14-e51c-4289-81a2-22c706c1a980)
 ![Screenshot 2023-09-17 18-59-36](https://github.com/bramses/bramdroid/assets/3282661/cf0a8804-ed05-426c-847c-a178f6a4e7a3)
@@ -171,7 +171,7 @@ Some quotes are too long and you may rightly not want to read them. The `tldr` b
 
 #### `aart`
 
-The main transformation of Bramdroid, allows you to (literally) see quotes in a brand new way. Uses the quote as a seed to generate a prompt, and uses that prompt to generate an image. Since each generation is unique, this entails that libraries could effectively moonlight as unique art galleries. 
+The main transformation of Commonplace Bot, allows you to (literally) see quotes in a brand new way. Uses the quote as a seed to generate a prompt, and uses that prompt to generate an image. Since each generation is unique, this entails that libraries could effectively moonlight as unique art galleries. 
 
 ![Screenshot 2023-09-17 19-01-24](https://github.com/bramses/bramdroid/assets/3282661/c320fbc8-bfbb-42a6-a91e-211a568d4dd2)
 ![Screenshot 2023-09-17 19-02-31](https://github.com/bramses/bramdroid/assets/3282661/7e60262e-7fe5-4f45-a548-88cf6dfefabc)
@@ -204,26 +204,26 @@ The feed is a automatic channel that posts a random quote every hour.
 
 ## Usage
 
-Join the Discord server to try it out! When you join, you will be greeted by Bramdroid, and you can start using the commands right away.
+Join the Discord server to try it out! When you join, you will be greeted by Commonplace Bot, and you can start using the commands right away.
 
 ## Example from `curio` to `share`
 
-Let's look at an end to end example of how Bramdroid can be used to learn new knowledge and share it.
+Let's look at an end to end example of how Commonplace Bot can be used to learn new knowledge and share it.
 
 ## Invocation Limits
 
 See invocation limits [here](https://www.bramadams.dev/discord/#limits)
 ## Installation
 
-Bramdroid is pretty bespoke, and is unlikely to be useful to anyone else due to its specificity.
+Commonplace Bot is pretty bespoke, and is unlikely to be useful to anyone else due to its specificity.
 
 However, there are some tactics that can be used to inspire your own bots of a similar caliber.
 
-I won't be discussing how the quotes get into the database, that is discussed on the backend server GiHub repo for [Quoordinates](https://github.com/bramses/quoordinates). The important thing to know about this pipeline is that everytime I highlight a quote on my Kindle, it ends up in Bramdroid's database. Hand-wavey, but there ya go.
+I won't be discussing how the quotes get into the database, that is discussed on the backend server GiHub repo for [Quoordinates](https://github.com/bramses/quoordinates). The important thing to know about this pipeline is that everytime I highlight a quote on my Kindle, it ends up in Commonplace Bot's database. Hand-wavey, but there ya go.
 
 ## Why Discord?
 
-A question I asked myself many times while building out Bramdroid, is: why do it on Discord? This choice is partially due to pragmatism, Discord-only features, and what I envision the future of LLM style app building to look like in the future.
+A question I asked myself many times while building out Commonplace Bot, is: why do it on Discord? This choice is partially due to pragmatism, Discord-only features, and what I envision the future of LLM style app building to look like in the future.
 
 ### Pragmatism
 

@@ -5,6 +5,7 @@ import {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
+  PermissionFlagsBits
 } from "discord.js";
 import { invocationWorkflow, preWorkflow } from "../../invocation.js";
 import { lookupBook } from "../../books.js";
@@ -16,7 +17,6 @@ import {
 } from "../../supabase-invocations.js";
 
 import dotenv from "dotenv";
-
 dotenv.config();
 
 const { quoordinates_server } = process.env;
@@ -34,17 +34,36 @@ export async function quosLogic(query) {
   return json;
 }
 
-export const data = new SlashCommandBuilder()
-  .setName("quos")
-  .setDescription("Quote search")
-  .addStringOption((option) =>
-    option
-      .setName("input")
-      .setDescription(
-        "your search query -- if you don't know what to search, try the `/random` command. Max 100 chars."
-      )
-      .setRequired(true)
-  );
+export let randomCommand 
+
+if (process.env.is_production === "true") {
+  randomCommand = new SlashCommandBuilder()
+    .setName("search")
+    .setDescription("Search the entire library of Commonplace Bot.")
+    .addStringOption((option) =>
+      option
+        .setName("input")
+        .setDescription(
+          "your search query -- if you don't know what to search, try the `/random` command. Max 100 chars."
+        )
+        .setRequired(true)
+    );
+} else {
+  randomCommand = new SlashCommandBuilder()
+    .setName("search")
+    .setDescription("Search the entire library of Commonplace Bot.")
+    .addStringOption((option) =>
+      option
+        .setName("input")
+        .setDescription(
+          "your search query -- if you don't know what to search, try the `/random` command. Max 100 chars."
+        )
+        .setRequired(true)
+    )
+    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+}
+
+export let data = randomCommand;
 
 export async function execute(interaction) {
   try {
@@ -65,7 +84,7 @@ export async function execute(interaction) {
 
     queue.push({
       task: async (user, message) => {
-        interaction.commandName = "quos";
+        interaction.commandName = "search";
         if (!(await preWorkflowSB(interaction))) {
           await interaction.editReply({
             content:
@@ -111,7 +130,7 @@ export async function execute(interaction) {
 
         const makeAart = new ButtonBuilder()
           .setCustomId("aart_btn")
-          .setLabel("aart")
+          .setLabel("draw")
           .setStyle(ButtonStyle.Primary);
 
         const learnMore = new ButtonBuilder()

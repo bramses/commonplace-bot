@@ -130,7 +130,7 @@ export async function execute(interaction) {
 
       const makeAart = new ButtonBuilder()
         .setCustomId("aart_btn")
-        .setLabel("aart")
+        .setLabel("draw")
         .setStyle(ButtonStyle.Primary);
 
       const learnMore = new ButtonBuilder()

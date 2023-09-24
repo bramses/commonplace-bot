@@ -4,6 +4,7 @@ import {
   ButtonBuilder,
   ButtonStyle,
   ChannelType,
+  PermissionFlagsBits
 } from "discord.js";
 import { lookupBook } from "../../books.js";
 import { randomExport } from "../quoordinates/random.js";
@@ -16,9 +17,21 @@ import {
 } from "../../supabase-invocations.js";
 import { queue, processQueue } from "../../shared-queue.js";
 
-const curioCommand = new SlashCommandBuilder()
-  .setName("curio")
-  .setDescription("Asks you questions to help you explore the library.");
+import dotenv from "dotenv";
+dotenv.config();
+
+let curioCommand 
+
+if (process.env.is_production === "true") {
+  curioCommand = new SlashCommandBuilder()
+    .setName("wander")
+    .setDescription("Wander psuedo-aimlessly through the library of Commonplace Bot.");
+} else {
+  curioCommand = new SlashCommandBuilder()
+    .setName("wander")
+    .setDescription("Wander psuedo-aimlessly through the library of Commonplace Bot.")
+    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+}
 
 export const data = curioCommand;
 
@@ -29,7 +42,7 @@ export async function execute(interaction) {
   if (interaction.channel.type === ChannelType.PublicThread) {
     await interaction.reply({
       content:
-        "The `/curio` command does not work in threads. Please use it in the main channel.",
+        "The `/wander` command does not work in threads. Please use it in the main channel.",
       ephemeral: true,
     });
     return;
@@ -42,7 +55,7 @@ export async function execute(interaction) {
 
   queue.push({
     task: async (user, message) => {
-      interaction.commandName = "curio";
+      interaction.commandName = "wander";
       if (!(await preWorkflowSB(interaction))) {
         await interaction.editReply({
           content:
@@ -107,7 +120,7 @@ export async function execute(interaction) {
         fetchReply: true,
         ephemeral: true,
       });
-      interaction.commandName = "curio";
+      interaction.commandName = "wander";
       // await invocationWorkflow(interaction);
       await invocationWorkflowSB(interaction);
       const filter = (i) => {
@@ -115,7 +128,7 @@ export async function execute(interaction) {
       };
 
       await message.edit({
-        content: `<@${user}>, your \`/curio\` request has been processed! Link: ${msg.url}`,
+        content: `<@${user}>, your \`/wander\` request has been processed! Link: ${msg.url}`,
         ephemeral: true,
       });
 
@@ -188,7 +201,7 @@ export async function execute(interaction) {
               });
               const makeAart = new ButtonBuilder()
                 .setCustomId("aart_btn")
-                .setLabel("aart")
+                .setLabel("draw")
                 .setStyle(ButtonStyle.Primary);
               const learnMore = new ButtonBuilder()
                 .setCustomId("quos_learn_more")

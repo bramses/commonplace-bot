@@ -6,3 +6,4 @@ command_limits.json
 books.json
 last_pushed_commit_diff.txt
 *.csv
+renames.json

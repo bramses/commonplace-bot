@@ -1,4 +1,4 @@
-import { REST, Routes } from 'discord.js';
+import { REST, Routes, PermissionFlagsBits } from 'discord.js';
 // import config from './config.json' assert { "type": "json" };
 
 import dotenv from "dotenv";
@@ -11,9 +11,6 @@ let clientId;
 let token;
 const { guildId, is_production } = process.env;
 
-console.log(`is_production: ${is_production === "true"}`);
-
-
 if (is_production === "true") {
 	clientId = process.env.clientId;
 	token = process.env.token;
@@ -24,6 +21,7 @@ if (is_production === "true") {
 }
 
 const commands = [];
+const permissions = [];
 // Grab all the command files from the commands directory you created earlier
 const foldersPath = new URL('./commands', import.meta.url).pathname;
 const commandFolders = fs.readdirSync(foldersPath);
@@ -44,6 +42,18 @@ for (const folder of commandFolders) {
 
 		if ('data' in command && 'execute' in command) {
 			commands.push(command.data.toJSON());
+			// if (is_production === "false") {
+			// 	permissions.push({
+			// 		id: command.data.toJSON().name,
+			// 		permissions: [
+			// 			{
+			// 				id: '1144620340509675541',
+			// 				type: 'CHANNEL',
+			// 				permission: true,
+			// 			},
+			// 		],
+			// 	});
+			// }
 		} else {
 			console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
 		}
@@ -63,6 +73,17 @@ const rest = new REST().setToken(token);
 			Routes.applicationGuildCommands(clientId, guildId),
 			{ body: commands },
 		);
+
+		// if (is_production === "false") {
+		// 	console.log(`Started refreshing ${permissions.length} application (/) permissions.`);
+		// 	console.log(permissions);
+		// 	await rest.put(
+		// 		Routes.guildApplicationCommandsPermissions(clientId, guildId),
+		// 		{ body: permissions },
+		// 	  );
+
+		// }
+		
 
 		console.log(`Successfully reloaded ${data.length} application (/) commands.`);
 	} catch (error) {

@@ -1,6 +1,6 @@
 import OpenAI from "openai";
 // import config from "../../config.json" assert { "type": "json" };
-import { SlashCommandBuilder } from "discord.js";
+import { SlashCommandBuilder, PermissionFlagsBits } from "discord.js";
 import { invocationWorkflow, preWorkflow } from "../../invocation.js";
 import Filter from "bad-words";
 import { queue, processQueue } from "../../shared-queue.js";
@@ -56,22 +56,40 @@ export async function main(prompt) {
   }
 }
 
-export const data = new SlashCommandBuilder()
-  .setName("aart")
-  .setDescription(
-    "Generates an art prompt from the feel of the text aesthetically."
-  )
-  .addStringOption((option) =>
-    option
-      .setName("input")
-      .setDescription("The text to generate an art prompt from.")
-      .setRequired(true)
-  );
+let drawCommand = null;
+
+if (process.env.is_production === "true") {
+  drawCommand = new SlashCommandBuilder()
+    .setName("draw")
+    .setDescription(
+      "Generates an art prompt and image from the feel of the text aesthetically."
+    )
+    .addStringOption((option) =>
+      option
+        .setName("input")
+        .setDescription("The text to generate an art prompt from.")
+        .setRequired(true)
+    );
+} else {
+  drawCommand = new SlashCommandBuilder()
+    .setName("draw")
+    .setDescription(
+      "Generates an art prompt and image from the feel of the text aesthetically."
+    )
+    .addStringOption((option) =>
+      option
+        .setName("input")
+        .setDescription("The text to generate an art prompt from.")
+        .setRequired(true)
+    )
+    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator);
+}
+
+export const data = drawCommand;
 
 export async function execute(interaction) {
   // await interaction.deferReply({ ephemeral: true });
 
-  
   // add to queue
   const sentMessage = await interaction.reply({
     content: `<@${interaction.user.id}>, your request has been added to the queue.`,
@@ -91,7 +109,6 @@ export async function execute(interaction) {
         return;
       }
 
-      
       const userInput = interaction.options.getString("input");
       const { prompt, imageUrl } = await main(userInput);
 

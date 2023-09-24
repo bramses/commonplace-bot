@@ -65,7 +65,7 @@ client.on("ready", () => {
 
         //   const makeAart = new ButtonBuilder()
         //     .setCustomId("aart_btn")
-        //     .setLabel("aart")
+        //     .setLabel("draw")
         //     .setStyle(ButtonStyle.Primary);
 
         //   const learnMore = new ButtonBuilder()
@@ -158,6 +158,13 @@ client.on(Events.MessageReactionAdd, async (reaction, user) => {
 
 client.on(Events.InteractionCreate, async (interaction) => {
   if (!interaction.isChatInputCommand() && !interaction.isButton()) return;
+
+  // List of channel IDs where the bot should respond
+  // const allowedChannels = ['1144620340509675541'];
+
+  // if (!allowedChannels.includes(interaction.channelId) && process.env.NODE_ENV !== 'production') {
+  //   return interaction.reply({ content: 'I\'m not allowed to interact in this channel!', ephemeral: true });
+  // }
 
   if (interaction.isButton()) {
     if (interaction.customId === "summarize") {
@@ -368,7 +375,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
       queue.push({
         task: async (user, message) => {
-          interaction.commandName = "aart";
+          interaction.commandName = "draw";
           if (!(await preWorkflowSB(interaction))) {
             await interaction.editReply({
               content:
@@ -386,8 +393,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
             `Art Prompt (**save the image it disappears in 24 hours!**): ${prompt} \n Image: [(url)](${imageUrl})`
           );
 
-          console.log(imageUrl);
-          interaction.commandName = "aart";
+          interaction.commandName = "draw";
           await invocationWorkflowSB(interaction, true);
           await interaction.editReply({
             content: `<@${interaction.user.id}>, your request has been completed. Link to result: ${channelMsg.url}`,
@@ -731,7 +737,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
       // create new components without the repost button
       const makeAart = new ButtonBuilder()
         .setCustomId("aart_btn")
-        .setLabel("aart")
+        .setLabel("draw")
         .setStyle(ButtonStyle.Primary);
 
       const learnMore = new ButtonBuilder()
@@ -793,7 +799,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
           const makeAart = new ButtonBuilder()
             .setCustomId("aart_btn")
-            .setLabel("aart")
+            .setLabel("draw")
             .setStyle(ButtonStyle.Primary);
 
           const learnMore = new ButtonBuilder()
@@ -984,7 +990,7 @@ client.on("guildMemberAdd", (member) => {
   if (!channel) return;
   // Send the message, mentioning the member
   channel.send(
-    `Welcome to the server, ${member}! Let's get started by typing \`/curio\` in this channel. Then follow the prompts! You may also prefer to go through the official Discord onboarding workflow and introduce yourself here!`
+    `Welcome to the server, ${member}! Let's get started by typing \`/wander\` in this channel. Then follow the prompts! You may also prefer to go through the official Discord onboarding workflow and introduce yourself here!`
   );
 });
 

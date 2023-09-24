@@ -4,6 +4,7 @@ import {
   ActionRowBuilder,
   ButtonStyle,
   ChannelType,
+  PermissionFlagsBits
 } from "discord.js";
 // import config from "../../config.json" assert { "type": "json" };
 import { lookupBook } from "../../books.js";
@@ -15,7 +16,6 @@ import {
 } from "../../supabase-invocations.js";
 
 import dotenv from "dotenv";
-
 dotenv.config();
 
 const { quoordinates_server_random } = process.env;
@@ -38,9 +38,18 @@ export async function randomExport() {
   }
 }
 
-const randomCommand = new SlashCommandBuilder()
+let randomCommand = null
+
+if (process.env.is_production === "true") {
+  randomCommand = new SlashCommandBuilder()
   .setName("random")
   .setDescription("Fetch a random quote from the library.");
+} else {
+  randomCommand = new SlashCommandBuilder()
+  .setName("random")
+  .setDescription("Fetch a random quote from the library.")
+  .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+}
 
 export const data = randomCommand;
 
@@ -85,7 +94,7 @@ export async function execute(interaction) {
 
         //   const makeAart = new ButtonBuilder()
         //     .setCustomId("aart_btn")
-        //     .setLabel("aart")
+        //     .setLabel("draw")
         //     .setStyle(ButtonStyle.Primary);
 
         // const repost = new ButtonBuilder()
