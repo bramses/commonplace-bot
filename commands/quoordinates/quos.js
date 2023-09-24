@@ -1,4 +1,4 @@
-import config from "../../config.json" assert { "type": "json" };
+// import config from "../../config.json" assert { "type": "json" };
 import {
   SlashCommandBuilder,
   ChannelType,
@@ -15,7 +15,11 @@ import {
   preWorkflowSB,
 } from "../../supabase-invocations.js";
 
-const { quoordinates_server } = config;
+import dotenv from "dotenv";
+
+dotenv.config();
+
+const { quoordinates_server } = process.env;
 
 // post to quoordinates server with the user's input as the body.query
 export async function quosLogic(query) {
