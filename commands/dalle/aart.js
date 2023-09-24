@@ -4,6 +4,10 @@ import { SlashCommandBuilder } from "discord.js";
 import { invocationWorkflow, preWorkflow } from "../../invocation.js";
 import Filter from "bad-words";
 import { queue, processQueue } from "../../shared-queue.js";
+import {
+  invocationWorkflowSB,
+  preWorkflowSB,
+} from "../../supabase-invocations.js";
 
 const { OPENAI_API_KEY } = config;
 
@@ -63,17 +67,7 @@ export const data = new SlashCommandBuilder()
 export async function execute(interaction) {
   // await interaction.deferReply({ ephemeral: true });
 
-  if (!(await preWorkflow(interaction))) {
-    await interaction.editReply({
-      content:
-        "You have reached your monthly limit for this command: " +
-        interaction.commandName +
-        ". You can get more invocations by supporting the project [here](https://www.bramadams.dev/discord/)!",
-      ephemeral: true,
-    });
-    return;
-  }
-
+  
   // add to queue
   const sentMessage = await interaction.reply({
     content: `<@${interaction.user.id}>, your request has been added to the queue.`,
@@ -82,6 +76,18 @@ export async function execute(interaction) {
 
   queue.push({
     task: async (user, message) => {
+      if (!(await preWorkflowSB(interaction))) {
+        await interaction.editReply({
+          content:
+            "You have reached your monthly limit for this command: " +
+            interaction.commandName +
+            ". You can get more invocations by supporting the project [here](https://www.bramadams.dev/discord/)!",
+          ephemeral: true,
+        });
+        return;
+      }
+
+      
       const userInput = interaction.options.getString("input");
       const { prompt, imageUrl } = await main(userInput);
 
@@ -91,7 +97,7 @@ export async function execute(interaction) {
       );
 
       console.log(imageUrl);
-      await invocationWorkflow(interaction);
+      await invocationWorkflowSB(interaction);
       await interaction.editReply({
         content: `<@${interaction.user.id}>, your request has been completed. Link to result: ${channelMsg.url}`,
         ephemeral: true,

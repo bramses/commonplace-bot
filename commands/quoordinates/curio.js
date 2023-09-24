@@ -44,7 +44,7 @@ export async function execute(interaction) {
     task: async (user, message) => {
       interaction.commandName = "curio";
       if (!(await preWorkflowSB(interaction))) {
-        await interaction.reply({
+        await interaction.editReply({
           content:
             "You have reached your monthly limit for this command: " +
             interaction.commandName +
@@ -140,6 +140,18 @@ export async function execute(interaction) {
 
           queue.push({
             task: async (user, message) => {
+              i.commandName = "quos";
+              console.log("curio command name: " + i.commandName);
+              if (!(await preWorkflowSB(i))) {
+                await i.editReply({
+                  content:
+                    "You have reached your monthly limit for this command: " +
+                    i.commandName +
+                    ". You can get more invocations by supporting the project [here](https://www.bramadams.dev/discord/)!",
+                  ephemeral: true,
+                });
+                return;
+              }
               const question =
                 questions[parseInt(i.customId.split("_")[3]) - 1];
               const quoordinate = await quosLogic(question.question);
@@ -198,9 +210,9 @@ export async function execute(interaction) {
                 });
               }
               // link to thread
-              interaction.commandName = "quos";
+              i.commandName = "quos";
               // await invocationWorkflow(interaction);
-              await invocationWorkflowSB(interaction, false, question.question);
+              await invocationWorkflowSB(i, false, question.question);
               await i.editReply({
                 content: `<@${interaction.user.id}>, your \`/quos\` result has been processed: ${thread.url}`,
               });

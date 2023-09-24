@@ -40,7 +40,6 @@ const addUser = async (interaction) => {
         username: userName,
         commands: [],
         commandInvocations: {},
-        isMember: false,
         dayOfSignup: new Date().toISOString().slice(0, 10), // YYYY-MM-DD
         tier: "free",
         lifetimeInvocations: 0,
@@ -157,17 +156,6 @@ const resetCommandInvocations = async () => {
 export const resetCommandInvocationsChoreWorkflow = () => {
   resetCommandInvocations();
 };
-
-// load invocations.json
-// const loadInvocations = () => {
-//   try {
-//     const data = fs.readFileSync("./invocations.json", "utf8");
-//     return JSON.parse(data);
-//   } catch (err) {
-//     console.error(err);
-//     return {};
-//   }
-// };
 
 const loadCommandLimits = async () => {
   // fetch command limits from supabase command_limits table

@@ -9,6 +9,10 @@ import config from "../../config.json" assert { "type": "json" };
 import { lookupBook } from "../../books.js";
 import { preWorkflow, invocationWorkflow } from "../../invocation.js";
 import { processQueue, queue } from "../../shared-queue.js";
+import {
+  invocationWorkflowSB,
+  preWorkflowSB,
+} from "../../supabase-invocations.js";
 
 const { quoordinates_server_random } = config;
 
@@ -37,23 +41,11 @@ const randomCommand = new SlashCommandBuilder()
 export const data = randomCommand;
 
 export async function execute(interaction) {
-  interaction.commandName = "random";
-  if (!(await preWorkflow(interaction))) {
-    await interaction.reply({
-      content:
-        "You have reached your monthly limit for this command: " +
-        interaction.commandName +
-        ". You can get more invocations by supporting the project [here](https://www.bramadams.dev/discord/)!",
-      ephemeral: true,
-    });
-    return;
-  }
-
   // check if in thread -- should not work in thread
   if (interaction.channel.type === ChannelType.PublicThread) {
     await interaction.reply({
       content:
-        "The \`/random\` command does not work in threads. Please use it in the main channel.",
+        "The `/random` command does not work in threads. Please use it in the main channel.",
       ephemeral: true,
     });
     return;
@@ -67,6 +59,17 @@ export async function execute(interaction) {
 
     queue.push({
       task: async (user, message) => {
+        interaction.commandName = "random";
+        if (!(await preWorkflowSB(interaction))) {
+          await interaction.editReply({
+            content:
+              "You have reached your monthly limit for this command: " +
+              interaction.commandName +
+              ". You can get more invocations by supporting the project [here](https://www.bramadams.dev/discord/)!",
+            ephemeral: true,
+          });
+          return;
+        }
         const random = await randomExport();
 
         while (random.text.length > 2000) {
@@ -81,10 +84,10 @@ export async function execute(interaction) {
         //     .setLabel("aart")
         //     .setStyle(ButtonStyle.Primary);
 
-        const repost = new ButtonBuilder()
-          .setCustomId("repost")
-          .setLabel("new-home")
-          .setStyle(ButtonStyle.Primary);
+        // const repost = new ButtonBuilder()
+        //   .setCustomId("repost")
+        //   .setLabel("new-home")
+        //   .setStyle(ButtonStyle.Primary);
 
         const learnMore = new ButtonBuilder()
           .setCustomId("quos_learn_more")
@@ -113,7 +116,7 @@ export async function execute(interaction) {
           .setStyle(ButtonStyle.Primary);
 
         const row = new ActionRowBuilder().addComponents(
-          repost,
+          // repost,
           learnMore,
           summarize,
           share
@@ -128,7 +131,7 @@ export async function execute(interaction) {
         });
 
         interaction.commandName = "random";
-        await invocationWorkflow(interaction);
+        await invocationWorkflowSB(interaction);
 
         await interaction.editReply({
           content: `<@${interaction.user.id}>, your \`/random\` request has been processed. Link to result: ${res.url}`,

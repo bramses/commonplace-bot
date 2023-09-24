@@ -17,6 +17,7 @@ import {
 } from "discord.js";
 import { main } from "./commands/dalle/aart.js";
 import { invocationWorkflow, preWorkflow } from "./invocation.js";
+import { invocationWorkflowSB, preWorkflowSB } from "./supabase-invocations.js";
 import { quosLogic } from "./commands/quoordinates/quos.js";
 import { lookupBook } from "./books.js";
 import { complete } from "./openai_helper.js";
@@ -158,16 +159,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
   if (interaction.isButton()) {
     if (interaction.customId === "summarize") {
       interaction.commandName = "summarize";
-      if (!(await preWorkflow(interaction))) {
-        await interaction.reply({
-          content:
-            "You have reached your monthly limit for this command: " +
-            interaction.commandName +
-            ". You can get more invocations by supporting the project [here](https://www.bramadams.dev/discord/)!",
-          ephemeral: true,
-        });
-        return;
-      }
 
       const sentMessage = await interaction.reply({
         content: `<@${interaction.user.id}>, your request has been added to the queue.`,
@@ -176,7 +167,16 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
       queue.push({
         task: async (user, message) => {
-          // await new Promise((resolve) => setTimeout(resolve, 6000));
+          if (!(await preWorkflowSB(interaction))) {
+            await interaction.editReply({
+              content:
+                "You have reached your monthly limit for this command: " +
+                interaction.commandName +
+                ". You can get more invocations by supporting the project [here](https://www.bramadams.dev/discord/)!",
+              ephemeral: true,
+            });
+            return;
+          }
 
           const summary = await complete(
             `tldr to one or two sentences this:\n${interaction.message.content
@@ -335,7 +335,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
       // await interaction.deferReply();
       const buttonId = interaction.customId;
       const quoteNumber = Number(buttonId.split("qroyale__quote_")[1]);
-      console.log(`Quote number: ${quoteNumber}`);
       const quotesVotes = JSON.parse(fs.readFileSync("./quotes-votes.json"));
       const userId = interaction.user.id;
       // { quotes: quotes, votes: [0,0,0,0,0], voters: [] }
@@ -359,18 +358,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
         ephemeral: true,
       });
     } else if (interaction.customId === "aart_btn") {
-      interaction.commandName = "aart";
-      if (!(await preWorkflow(interaction))) {
-        await interaction.reply({
-          content:
-            "You have reached your monthly limit for this command: " +
-            interaction.commandName +
-            ". You can get more invocations by supporting the project [here](https://www.bramadams.dev/discord/)!",
-          ephemeral: true,
-        });
-        return;
-      }
-
       const sentMessage = await interaction.reply({
         content: `<@${interaction.user.id}>, your request has been added to the queue.`,
         ephemeral: true,
@@ -378,6 +365,17 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
       queue.push({
         task: async (user, message) => {
+          interaction.commandName = "aart";
+          if (!(await preWorkflowSB(interaction))) {
+            await interaction.editReply({
+              content:
+                "You have reached your monthly limit for this command: " +
+                interaction.commandName +
+                ". You can get more invocations by supporting the project [here](https://www.bramadams.dev/discord/)!",
+              ephemeral: true,
+            });
+            return;
+          }
           const { prompt, imageUrl } = await main(interaction.message.content);
 
           // send message to channel
@@ -387,7 +385,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
           console.log(imageUrl);
           interaction.commandName = "aart";
-          await invocationWorkflow(interaction, true);
+          await invocationWorkflowSB(interaction, true);
           await interaction.editReply({
             content: `<@${interaction.user.id}>, your request has been completed. Link to result: ${channelMsg.url}`,
             ephemeral: true,
@@ -399,23 +397,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
       });
 
       processQueue();
-      // await interaction.deferReply();
-      // await preWorkflow(interaction);
-      // const { prompt, imageUrl } = await main(interaction.message.content);
-
-      // if (interaction.replied || interaction.deferred) {
-      //   await interaction.followUp(
-      //     `Art Prompt (**save the image -- it disappears in 24 hours!**): ${prompt} \n Image: [(url)](${imageUrl})`
-      //   );
-      // } else {
-      //   await interaction.reply(
-      //     `Art Prompt (**save the image -- it disappears in 24 hours!**): ${prompt} \n Image: [(url)](${imageUrl})`
-      //   );
-      // }
-      // console.log(imageUrl);
-      // // set interaction command name to aart
-      // interaction.commandName = "aart";
-      // await invocationWorkflow(interaction, true);
     } else if (interaction.customId === "share") {
       /*
 		1. get an image url from aart
@@ -427,17 +408,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
 		3. get back a url and reply with it
 		*/
       // await interaction.deferReply();
-      interaction.commandName = "share";
-      if (!(await preWorkflow(interaction))) {
-        await interaction.reply({
-          content:
-            "You have reached your monthly limit for this command: " +
-            interaction.commandName +
-            ". You can get more invocations by supporting the project [here](https://www.bramadams.dev/discord/)!",
-          ephemeral: true,
-        });
-        return;
-      }
 
       const sentMessage = await interaction.reply({
         content: `<@${interaction.user.id}>, your request has been added to the queue.`,
@@ -447,6 +417,17 @@ client.on(Events.InteractionCreate, async (interaction) => {
       try {
         queue.push({
           task: async (user, message) => {
+            interaction.commandName = "share";
+            if (!(await preWorkflowSB(interaction))) {
+              await interaction.editReply({
+                content:
+                  "You have reached your monthly limit for this command: " +
+                  interaction.commandName +
+                  ". You can get more invocations by supporting the project [here](https://www.bramadams.dev/discord/)!",
+                ephemeral: true,
+              });
+              return;
+            }
             let userInput = interaction.message.content.trim();
             // remove [cover](url) from userInput
             const regex = /\[cover\]\((.*)\)/;
@@ -491,7 +472,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
             const res = await interaction.followUp(`${shareUrl}`);
 
             interaction.commandName = "share";
-            await invocationWorkflow(interaction, true);
+            await invocationWorkflowSB(interaction, true);
 
             await message.edit({
               content: `<@${user}>, your \`/share\` request has been processed! Link: ${res.url}`,
@@ -784,18 +765,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
       interaction.commandName = "repost";
       await invocationWorkflow(interaction, true);
     } else if (interaction.customId === "quos_learn_more") {
-      interaction.commandName = "delve";
-      if (!(await preWorkflow(interaction))) {
-        await interaction.reply({
-          content:
-            "You have reached your monthly limit for this command: " +
-            interaction.commandName +
-            ". You can get more invocations by supporting the project [here](https://www.bramadams.dev/discord/)!",
-          ephemeral: true,
-        });
-        return;
-      }
-
       const sentMessage = await interaction.reply({
         content: `<@${interaction.user.id}>, your request has been added to the queue.`,
         ephemeral: true,
@@ -803,6 +772,17 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
       queue.push({
         task: async (user, message) => {
+          interaction.commandName = "delve";
+          if (!(await preWorkflowSB(interaction))) {
+            await interaction.editReply({
+              content:
+                "You have reached your monthly limit for this command: " +
+                interaction.commandName +
+                ". You can get more invocations by supporting the project [here](https://www.bramadams.dev/discord/)!",
+              ephemeral: true,
+            });
+            return;
+          }
           const similarQuos = await quosLogic(interaction.message.content);
           console.log(similarQuos);
 
@@ -886,7 +866,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
               }
 
               interaction.commandName = "delve";
-              await invocationWorkflow(interaction, true);
+              await invocationWorkflowSB(interaction, true);
 
               await message.edit({
                 content: `<@${user}>, your \`/delve\` request has been processed! Link: ${firstQuote.url}`,
@@ -936,7 +916,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
             }
 
             interaction.commandName = "delve";
-            await invocationWorkflow(interaction, true);
+            await invocationWorkflowSB(interaction, true);
 
             await message.edit({
               content: `<@${user}>, your \`/delve\` request has been processed! Link: ${thread.url}`,
@@ -950,128 +930,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
       });
 
       processQueue();
-
-      // await interaction.deferReply();
-      // const similarQuos = await quosLogic(interaction.message.content);
-
-      // const makeAart = new ButtonBuilder()
-      //   .setCustomId("aart_btn")
-      //   .setLabel("aart")
-      //   .setStyle(ButtonStyle.Primary);
-
-      // const learnMore = new ButtonBuilder()
-      //   .setCustomId("quos_learn_more")
-      //   .setLabel("delve")
-      //   .setStyle(ButtonStyle.Primary);
-
-      // const summarize = new ButtonBuilder()
-      //   .setCustomId("summarize")
-      //   .setLabel("tldr")
-      //   .setStyle(ButtonStyle.Primary);
-
-      // const share = new ButtonBuilder()
-      //   .setCustomId("share")
-      //   .setLabel("share")
-      //   .setStyle(ButtonStyle.Primary);
-
-      // const row = new ActionRowBuilder().addComponents(
-      //   makeAart,
-      //   learnMore,
-      //   summarize,
-      //   share
-      // );
-
-      // // get other messages in current thread
-      // if (interaction.channel instanceof ThreadChannel) {
-      //   const threadId = interaction.channel.id; // replace with your thread ID
-      //   const thread = await client.channels.fetch(threadId);
-      //   if (thread instanceof ThreadChannel) {
-      //     const messages = await thread.messages.fetch();
-      //     const messagesContent = messages.map((m) => m.content);
-
-      //     const quotes = similarQuos
-      //       .filter((q) => {
-      //         return !interaction.message.content.includes(q.text);
-      //       })
-      //       .filter((q) => {
-      //         // q.text is the quote should not be in any of the messages from messagesContent
-      //         return !messagesContent.some((m) => m.includes(q.text));
-      //       })
-      //       .map(
-      //         (q) =>
-      //           `> ${q.text}\n\n-- ${
-      //             lookupBook(q.title)
-      //               ? `[${q.title} (**affiliate link**)](${lookupBook(
-      //                   q.title
-      //                 )})`
-      //               : q.title
-      //           }\n\n`
-      //       )
-      //       .filter((q) => q.length < 2000);
-      //     // append quotes to thread
-
-      //     if (quotes.length === 0) {
-      //       await interaction.followUp({
-      //         content: "No more quotes found!",
-      //         components: [],
-      //       });
-      //     } else {
-      //       for (const quote of quotes) {
-      //         await interaction.followUp({
-      //           content: quote,
-      //           components: [row],
-      //         });
-      //       }
-      //     }
-
-      //     interaction.commandName = "delve";
-      //     await invocationWorkflow(interaction, true);
-      //   } else {
-      //     console.log("The channel with the provided ID is not a thread.");
-      //   }
-      // } else {
-      //   // create a new thread and post the quotes there
-      //   const thread = await interaction.channel.threads.create({
-      //     name:
-      //       interaction.message.content
-      //         .replace(/\[(.*?)\]\((.*?)\)/g, "$1")
-      //         .replace(/\(\*\*affiliate link\*\*\)/g, "")
-      //         .slice(0, 50) + "...",
-      //     autoArchiveDuration: 60,
-      //     type: ChannelType.GUILD_PUBLIC_THREAD,
-      //     reason: "Sending quotes as separate messages in one thread",
-      //   });
-
-      //   const quotes = similarQuos
-      //     .filter((q) => {
-      //       return !interaction.message.content.includes(q.text);
-      //     })
-      //     .map(
-      //       (q) =>
-      //         `> ${q.text}\n\n-- ${
-      //           lookupBook(q.title)
-      //             ? `[${q.title} (**affiliate link**)](${lookupBook(q.title)})`
-      //             : q.title
-      //         }\n\n`
-      //     )
-      //     .filter((q) => q.length < 2000);
-      //   // append quotes to thread
-
-      //   for (const quote of quotes) {
-      //     await thread.send({
-      //       content: quote,
-      //       components: [row],
-      //     });
-      //   }
-
-      //   await interaction.followUp({
-      //     content: `Quotes sent to thread: ${thread.url}`,
-      //     components: [],
-      //   });
-
-      //   interaction.commandName = "delve";
-      //   await invocationWorkflow(interaction, true);
-      // }
     }
 
     return;
