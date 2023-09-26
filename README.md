@@ -2,10 +2,7 @@
 
 Commonplace Bot is a modern representation of the commonplace book. By using a combination of the newest computation technologies and creative design techniques, Commonplace Bot is the first of its kind to show what the commonplace book of the future may look like.
 
-
-## Video Demo (click the image)
-
-[![Screenshot 2023-09-26 11-00-20](https://github.com/bramses/commonplace-bot/assets/3282661/fe290697-453b-4294-9d0c-fefece1be85a)](https://youtu.be/7TgqMRz2r3M?si=CIavGQsykZXd3pna)
+[VIDEO DEMO](https://youtu.be/7TgqMRz2r3M?si=tiARbFeE9Dk6CHNj)
 
 
 ## What is a commonplace book?
