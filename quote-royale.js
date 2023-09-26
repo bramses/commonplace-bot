@@ -15,7 +15,19 @@ import {
   ButtonStyle,
 } from "discord.js";
 import { lookupBook } from "./books.js";
-import fs from "node:fs";
+import { createClient } from "@supabase/supabase-js";
+
+import dotenv from "dotenv";
+
+dotenv.config();
+
+const { supabaseUrl, supabaseKey } = process.env;
+
+const supabase = createClient(supabaseUrl, supabaseKey, {
+  auth: {
+    persistSession: false,
+  },
+});
 
 const createQuoteRoyaleChannel = async (client) => {
   const guild = await client.guilds.fetch("1059980663404646420");
@@ -36,16 +48,18 @@ const postQuotes = async (channel) => {
 
   for (let i = 0; i < 5; i++) {
     let random = await randomExport();
-    while (random.text.length > 2000) {
+    while (random.text.length > 1900) {
       random = await randomExport();
     }
     quotes.push(random);
   }
 
-  // send each quote as a separate message
+  // send each quote as a separate message 
+  let i = 1;
   for (const quote of quotes) {
     await channel.send({
-      content: `> ${quote.text}\n\n-- [${
+      content: `Quote ${i++}:\n\n
+      > ${quote.text}\n\n-- [${
         quote.book.title
       } (**affiliate link**)](${await lookupBook(quote.book.title)})`,
     });
@@ -75,7 +89,7 @@ const postQuotes = async (channel) => {
   );
 
   const message = await channel.send({
-    content: "Vote for your favorite quote!",
+    content: "Vote for your favorite quote! You can only vote once!",
     components: [row],
   });
 
@@ -87,10 +101,11 @@ const postQuotes = async (channel) => {
   };
 
   // write quotes to json file with { quote: quote, votes: 0, voters: [] }
-  fs.writeFileSync(
-    "./quotes-votes.json",
-    JSON.stringify(quotesWithVotes, null, 2)
-  );
+
+  // upsert in supabase table quote-votes with schema { quotes: jsonb, votes: jsonb, voters: jsonb }
+  const { data, error } = await supabase
+    .from("quote-votes")
+    .insert([{ quotes: quotesWithVotes.quotes, votes: quotesWithVotes.votes, voters: quotesWithVotes.voters }]);
 
   return message;
 };
@@ -132,13 +147,28 @@ export const quoteRoyale = async (client) => {
       existingChannel.name.split("-")[4];
     console.log(`today: ${today}, channelDate: ${channelDate}`);
 
+
     if (today === channelDate) {
       // channel is up to date, do nothing
       return existingChannel;
     }
 
-    const quotesVotes = JSON.parse(fs.readFileSync("./quotes-votes.json"));
-    winner = calculateWinner(quotesVotes);
+    // fetch votes from supabase table last row quote-votes and convert to json
+    const { data, error } = await supabase
+      .from("quote-votes")
+      .select("*")
+      .order("id", { ascending: false })
+      .limit(1);
+
+    if (error) {
+      console.log(error);
+      return;
+    }
+
+    // data to json
+    const json = data[0];
+
+    winner = calculateWinner(json);
 
     // channel is not up to date, delete it
     await existingChannel.delete();

@@ -28,6 +28,8 @@ import { randomExport } from "./commands/quoordinates/random.js";
 import { quoteRoyale } from "./quote-royale.js";
 import { processQueue, queue } from "./shared-queue.js";
 
+import { createClient } from "@supabase/supabase-js";
+
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -41,6 +43,14 @@ const client = new Client({
 import dotenv from "dotenv";
 
 dotenv.config();
+
+const { supabaseUrl, supabaseKey } = process.env;
+
+const supabase = createClient(supabaseUrl, supabaseKey, {
+  auth: {
+    persistSession: false,
+  },
+});
 
 client.on("ready", () => {
   console.log(`Logged in as ${client.user.tag}!`);
@@ -101,8 +111,24 @@ client.on("ready", () => {
   );
   job.start();
 
-  // test quote royale
-  quoteRoyale(client);
+  // create a job to run quoteRoyale(client); every day at 12:00 AM EST
+  const job2 = new CronJob(
+    "0 0 * * *",
+    async () => {
+      try {
+        console.log("You will see this message every day at 12:00 AM EST");
+        await quoteRoyale(client);
+      } catch (err) {
+        console.error(err);
+      }
+    },
+    null,
+    true,
+    "America/New_York"
+  );
+
+  job2.start();
+  
 });
 
 client.commands = new Collection();
@@ -345,7 +371,21 @@ client.on(Events.InteractionCreate, async (interaction) => {
       // await interaction.deferReply();
       const buttonId = interaction.customId;
       const quoteNumber = Number(buttonId.split("qroyale__quote_")[1]);
-      const quotesVotes = JSON.parse(fs.readFileSync("./quotes-votes.json"));
+      // const quotesVotes = JSON.parse(fs.readFileSync("./quotes-votes.json"));
+      // last row in db
+      const { data , error } = await supabase
+        .from("quote-votes")
+        .select("*")
+        .order("id", { ascending: false })
+        .limit(1);
+
+      if (error) {
+        console.log(error);
+        return;
+      }
+
+      const quotesVotes = data[0];
+
       const userId = interaction.user.id;
       // { quotes: quotes, votes: [0,0,0,0,0], voters: [] }
       const voters = quotesVotes.voters;
@@ -359,10 +399,20 @@ client.on(Events.InteractionCreate, async (interaction) => {
       quotesVotes.votes[quoteNumber - 1] =
         quotesVotes.votes[quoteNumber - 1] + 1;
       quotesVotes.voters.push(userId);
-      fs.writeFileSync(
-        "./quotes-votes.json",
-        JSON.stringify(quotesVotes, null, 2)
-      );
+      // fs.writeFileSync(
+      //   "./quotes-votes.json",
+      //   JSON.stringify(quotesVotes, null, 2)
+      // );
+      // update db
+      const { data: data2, error: error2 } = await supabase
+        .from("quote-votes")
+        .update({ votes: quotesVotes.votes, voters: quotesVotes.voters })
+        .eq("id", quotesVotes.id);
+
+      if (error2) {
+        console.log(error2);
+        return;
+      }
       await interaction.reply({
         content: `You voted for quote ${quoteNumber}! Check back tomorrow (EST) for the results. And come back tomorrow to vote again on a new set of quotes!`,
         ephemeral: true,
@@ -903,8 +953,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
               reason: "Sending quotes as separate messages in one thread",
             });
 
-
-
             const quotesPromises = similarQuos
               .filter((q) => {
                 return !interaction.message.content.includes(q.text);
@@ -917,10 +965,9 @@ client.on(Events.InteractionCreate, async (interaction) => {
                     : q.title
                 }\n\n`;
                 return quote.length < 2000 ? quote : null;
-              })
+              });
 
             const quotes = (await Promise.all(quotesPromises)).filter(Boolean);
-
 
             if (quotes.length === 0) {
               await thread.send({
