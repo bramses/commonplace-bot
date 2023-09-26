@@ -25,11 +25,11 @@ let curioCommand
 if (process.env.is_production === "true") {
   curioCommand = new SlashCommandBuilder()
     .setName("wander")
-    .setDescription("Wander psuedo-aimlessly through the library of Commonplace Bot.");
+    .setDescription("Wander with the help of a guide through the library of Commonplace Bot.");
 } else {
   curioCommand = new SlashCommandBuilder()
     .setName("wander")
-    .setDescription("Wander psuedo-aimlessly through the library of Commonplace Bot.")
+    .setDescription("Wander with the help of a guide through the library of Commonplace Bot.")
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
 }
 
