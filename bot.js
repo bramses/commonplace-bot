@@ -530,8 +530,19 @@ client.on(Events.InteractionCreate, async (interaction) => {
             );
             const json = await response.json();
 
-            const shareUrl = json.result;
-            const res = await interaction.followUp(`${shareUrl}`);
+            console.log(json);
+
+            if (json.error) {
+              await interaction.followUp({
+                content: "Something went wrong. Please try again.",
+                ephemeral: true,
+              });
+              return;
+            }
+
+            const shareUrlHorizontal = json.result.horizontal;
+            const shareUrlVertical = json.result.vertical;
+            const res = await interaction.followUp(`Art Prompt: ${prompt}\n\nHorizontal:\n\n${shareUrlHorizontal}\n\nVertical:\n\n${shareUrlVertical}`);
 
             interaction.commandName = "share";
             await invocationWorkflowSB(interaction, true);
