@@ -1,5 +1,7 @@
 # Commonplace Bot: A Novel Approach to Capturing, Engaging, and Sharing Knowledge
 
+[![](https://dcbadge.vercel.app/api/server/GrgkFP3Je3)](https://discord.gg/GrgkFP3Je3)
+
 Commonplace Bot is a modern representation of the commonplace book. By using a combination of the newest computation technologies and creative design techniques, Commonplace Bot is the first of its kind to show what the commonplace book of the future may look like.
 
 [VIDEO DEMO](https://youtu.be/7TgqMRz2r3M?si=tiARbFeE9Dk6CHNj)
