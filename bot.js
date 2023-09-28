@@ -921,11 +921,17 @@ client.on(Events.InteractionCreate, async (interaction) => {
             .setLabel("share")
             .setStyle(ButtonStyle.Primary);
 
+            const quiz = new ButtonBuilder()
+              .setCustomId("quiz")
+              .setLabel("quiz")
+              .setStyle(ButtonStyle.Primary);
+
           const row = new ActionRowBuilder().addComponents(
             makeAart,
             learnMore,
             summarize,
-            share
+            share,
+            quiz
           );
 
           // get other messages in current thread
