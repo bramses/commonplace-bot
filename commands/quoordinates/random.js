@@ -128,11 +128,17 @@ export async function execute(interaction) {
           .setLabel("cloze")
           .setStyle(ButtonStyle.Primary);
 
+        const quiz = new ButtonBuilder()
+          .setCustomId("quiz")
+          .setLabel("quiz")
+          .setStyle(ButtonStyle.Primary);
+
         const row = new ActionRowBuilder().addComponents(
           // repost,
           learnMore,
           summarize,
-          share
+          share,
+          quiz,
         );
 
         // \n\n[cover](${random.book.cover_image_url})

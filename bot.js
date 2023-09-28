@@ -236,6 +236,49 @@ client.on(Events.InteractionCreate, async (interaction) => {
       });
 
       processQueue();
+    } if (interaction.customId === "quiz") {
+      interaction.commandName = "quiz";
+
+      const sentMessage = await interaction.reply({
+        content: `<@${interaction.user.id}>, your request has been added to the queue.`,
+        ephemeral: true,
+      });
+
+      queue.push({
+        task: async (user, message) => {
+          if (!(await preWorkflowSB(interaction))) {
+            await interaction.editReply({
+              content:
+                "You have reached your monthly limit for this command: " +
+                interaction.commandName +
+                ". You can get more invocations by supporting the project [here](https://www.bramadams.dev/discord/)!",
+              ephemeral: true,
+            });
+            return;
+          }
+
+          const quiz = await complete(
+            `Hey Teachers assistant! Turn this quote into a one to three question quiz (your discretion). The form should be "Question: ||Answer||". Make sure to surround answer with "||" so its hidden from the students. Just return the quiz and nothing else.\n\nQuote:\n${interaction.message.content
+              .replace(/\(\*\*affiliate link\*\*\)/g, "")
+              .replace(/\[(.*?)\]\((.*?)\)/g, "$1")
+              .trim()}`
+          );
+
+          const res = await interaction.followUp(quiz);
+          interaction.commandName = "quiz";
+          await invocationWorkflowSB(interaction, true);
+
+          await message.edit({
+            content: `<@${user}>, your \`/quiz\` request has been processed! Link: ${res.url}`,
+            ephemeral: true,
+          });
+        },
+        user: interaction.user.id,
+        interaction: interaction,
+        message: sentMessage,
+      });
+
+      processQueue();
     } else if (interaction.customId === "follow_up_questions") {
       await interaction.deferReply({
         ephemeral: true,

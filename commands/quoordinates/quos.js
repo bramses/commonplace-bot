@@ -148,11 +148,18 @@ export async function execute(interaction) {
           .setLabel("share")
           .setStyle(ButtonStyle.Primary);
 
+        const quiz = new ButtonBuilder()
+          .setCustomId("quiz")
+          .setLabel("quiz")
+          .setStyle(ButtonStyle.Primary);
+
+
         const row = new ActionRowBuilder().addComponents(
           makeAart,
           learnMore,
           summarize,
-          share
+          share,
+          quiz,
         );
 
         for (const quote of quotes) {

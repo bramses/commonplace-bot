@@ -202,11 +202,18 @@ export async function execute(interaction) {
                 .setCustomId("share")
                 .setLabel("share")
                 .setStyle(ButtonStyle.Primary);
+
+              const quiz = new ButtonBuilder()
+              .setCustomId("quiz")
+              .setLabel("quiz")
+              .setStyle(ButtonStyle.Primary);
+    
               const row = new ActionRowBuilder().addComponents(
                 makeAart,
                 learnMore,
                 summarize,
-                share
+                share,
+                quiz
               );
               // await thread.send({
               //   content: `**Question:** ${question.question}`,
