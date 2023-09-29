@@ -176,9 +176,9 @@ client.on(Events.MessageReactionAdd, async (reaction, user) => {
     `${reaction.count} user(s) have given the same reaction to this message! ${reaction.emoji.name}`
   );
 
-  // log the reaction and if reaction is :floppy_disk: then dm the user with the message content
+  // log the reaction and if reaction is :floppy_disk: then dm the user with the message content and the url to the message
   if (reaction.emoji.name === "💾") {
-    await user.send(`${reaction.message.content}`);
+    await user.send(`${reaction.message.content}\n\n${reaction.message.url}`);
   }
 });
 
