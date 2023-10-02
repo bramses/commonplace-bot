@@ -236,7 +236,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
       });
 
       processQueue();
-    } if (interaction.customId === "quiz") {
+    } else if (interaction.customId === "quiz") {
       interaction.commandName = "quiz";
 
       const sentMessage = await interaction.reply({
@@ -270,6 +270,74 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
           await message.edit({
             content: `<@${user}>, your \`/quiz\` request has been processed! Link: ${res.url}`,
+            ephemeral: true,
+          });
+        },
+        user: interaction.user.id,
+        interaction: interaction,
+        message: sentMessage,
+      });
+
+      processQueue();
+    } else if (interaction.customId === "pseudocode") {
+      interaction.commandName = "pseudocode";
+
+      const sentMessage = await interaction.reply({
+        content: `<@${interaction.user.id}>, your request has been added to the queue.`,
+        ephemeral: true,
+      });
+
+      queue.push({
+        task: async (user, message) => {
+          if (!(await preWorkflowSB(interaction))) {
+            await interaction.editReply({
+              content:
+                "You have reached your monthly limit for this command: " +
+                interaction.commandName +
+                ". You can get more invocations by supporting the project [here](https://www.bramadams.dev/discord/)!",
+              ephemeral: true,
+            });
+            return;
+          }
+
+          const pseudocodeRes = await complete(
+            `You are a surrealist creative technologist who has a graduate degree in Computer Science and mathematics. You are paid very well to think outside the box and come up with never before thought of surreal app ideas, your ideas are always hits on the app store because there are no similar offerings. You don't come up with boring ideas that are straightforward, you deeply think about your quote and provide your clients the best option. You have access to the GPT-4 API, ReactJS, Go Lang for CLI apps, Swift for iOS apps, p5.js and three.js for web canvas, and any HTTP calls. If you'd like to use any libraries or SaaS tools, merely add a comment as to what they are and why. Use this quote and convert it to an app idea and psuedocode. Total should be less than 1000 chars. If you use \`\`\` for the pseudocode make sure to include the programming language e.g. \`\`\`swift or \`\`\`js or \`\`\`go for example. Choose whatever language is best.\n\nQuote:\n${interaction.message.content
+              .replace(/\(\*\*affiliate link\*\*\)/g, "")
+              .replace(/\[(.*?)\]\((.*?)\)/g, "$1")
+              .trim()}`
+          );
+
+          // split the pseudocodeRes into the description and code block (specified by ```)
+          const pseudocodeResSplit = pseudocodeRes.split("```");
+          const pseudocodeResDescription = pseudocodeResSplit[0];
+          const pseudocodeResCodeBlock = pseudocodeResSplit[1];
+
+          // fence the code block with ``` and the language if not already
+          const pseudocodeResCodeBlockFenced =
+            pseudocodeResCodeBlock.startsWith("```") &&
+            pseudocodeResCodeBlock.endsWith("```")
+              ? pseudocodeResCodeBlock
+              : `\`\`\`${pseudocodeResCodeBlock.trim()}\`\`\``;
+
+          // if either is greater than 2000 chars, return gracefully
+          if (
+            pseudocodeResDescription.length > 2000 ||
+            pseudocodeResCodeBlockFenced.length > 2000
+          ) {
+            await interaction.editReply({
+              content: `<@${user}>, your \`/pseudocode\` request has been processed! However, the result was too long to post in a single message. Please try again.`,
+              ephemeral: true,
+            });
+            return;
+          }
+
+          const res = await interaction.followUp(pseudocodeResDescription);
+          await interaction.followUp(pseudocodeResCodeBlockFenced);
+          interaction.commandName = "pseudocode";
+          await invocationWorkflowSB(interaction, true);
+
+          await message.edit({
+            content: `<@${user}>, your \`/pseudocode\` request has been processed! Link: ${res.url}`,
             ephemeral: true,
           });
         },

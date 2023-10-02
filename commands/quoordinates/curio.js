@@ -4,7 +4,7 @@ import {
   ButtonBuilder,
   ButtonStyle,
   ChannelType,
-  PermissionFlagsBits
+  PermissionFlagsBits,
 } from "discord.js";
 import { lookupBook } from "../../books.js";
 import { randomExport } from "../quoordinates/random.js";
@@ -20,17 +20,21 @@ import { queue, processQueue } from "../../shared-queue.js";
 import dotenv from "dotenv";
 dotenv.config();
 
-let curioCommand 
+let curioCommand;
 
 if (process.env.is_production === "true") {
   curioCommand = new SlashCommandBuilder()
     .setName("wander")
-    .setDescription("Wander with the help of a guide through the library of Commonplace Bot.");
+    .setDescription(
+      "Wander with the help of a guide through the library of Commonplace Bot."
+    );
 } else {
   curioCommand = new SlashCommandBuilder()
     .setName("wander")
-    .setDescription("Wander with the help of a guide through the library of Commonplace Bot.")
-    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+    .setDescription(
+      "Wander with the help of a guide through the library of Commonplace Bot."
+    )
+    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator);
 }
 
 export const data = curioCommand;
@@ -142,7 +146,6 @@ export async function execute(interaction) {
           i.customId === "curio__question_2" ||
           i.customId === "curio__question_3"
         ) {
-
           const collectorMsgQueue = await i.reply({
             content: `<@${i.user.id}>, your request has been added to the queue.`,
             ephemeral: true,
@@ -166,16 +169,19 @@ export async function execute(interaction) {
                 questions[parseInt(i.customId.split("_")[3]) - 1];
               const quoordinate = await quosLogic(question.question);
 
-
               const quotesPromises = quoordinate.map(async (q) => {
                 const bookLink = await lookupBook(q.title);
                 const quote = `> ${q.text}\n\n-- ${
-                  bookLink ? `[${q.title} (**affiliate link**)](${bookLink})` : q.title
+                  bookLink
+                    ? `[${q.title} (**affiliate link**)](${bookLink})`
+                    : q.title
                 }\n\n`;
                 return quote.length < 2000 ? quote : null;
               });
-              
-              const quotes = (await Promise.all(quotesPromises)).filter(Boolean);
+
+              const quotes = (await Promise.all(quotesPromises)).filter(
+                Boolean
+              );
 
               const startMessage = await interaction.channel.send(
                 `${question.question}`
@@ -204,10 +210,15 @@ export async function execute(interaction) {
                 .setStyle(ButtonStyle.Primary);
 
               const quiz = new ButtonBuilder()
-              .setCustomId("quiz")
-              .setLabel("quiz")
-              .setStyle(ButtonStyle.Primary);
-    
+                .setCustomId("quiz")
+                .setLabel("quiz")
+                .setStyle(ButtonStyle.Primary);
+
+              const pseudocode = new ButtonBuilder()
+                .setCustomId("pseudocode")
+                .setLabel("pseudocode")
+                .setStyle(ButtonStyle.Primary);
+
               const row = new ActionRowBuilder().addComponents(
                 makeAart,
                 learnMore,
@@ -215,6 +226,9 @@ export async function execute(interaction) {
                 share,
                 quiz
               );
+
+              const row2 = new ActionRowBuilder().addComponents(pseudocode);
+
               // await thread.send({
               //   content: `**Question:** ${question.question}`,
               // });
@@ -222,7 +236,7 @@ export async function execute(interaction) {
               for (const quote of quotes) {
                 await thread.send({
                   content: quote,
-                  components: [row],
+                  components: [row, row2],
                 });
               }
               // link to thread

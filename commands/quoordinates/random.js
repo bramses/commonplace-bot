@@ -133,12 +133,18 @@ export async function execute(interaction) {
           .setLabel("quiz")
           .setStyle(ButtonStyle.Primary);
 
+        const pseudocode = new ButtonBuilder()
+          .setCustomId("pseudocode")
+          .setLabel("pseudocode")
+          .setStyle(ButtonStyle.Primary);
+
         const row = new ActionRowBuilder().addComponents(
           // repost,
           learnMore,
           summarize,
           share,
           quiz,
+          pseudocode,
         );
 
         // \n\n[cover](${random.book.cover_image_url})

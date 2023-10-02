@@ -154,6 +154,11 @@ export async function execute(interaction) {
           .setStyle(ButtonStyle.Primary);
 
 
+        const pseudocode = new ButtonBuilder()
+          .setCustomId("pseudocode")
+          .setLabel("pseudocode")
+          .setStyle(ButtonStyle.Primary);
+
         const row = new ActionRowBuilder().addComponents(
           makeAart,
           learnMore,
@@ -161,6 +166,8 @@ export async function execute(interaction) {
           share,
           quiz,
         );
+
+        const row2 = new ActionRowBuilder().addComponents(pseudocode);
 
         for (const quote of quotes) {
           if (quote.length > 2000) {
@@ -174,7 +181,7 @@ export async function execute(interaction) {
             if (strippedQuote.length < 2000) {
               await thread.send({
                 content: strippedQuote,
-                components: [row],
+                components: [row, row2],
               });
 
               await thread.send({
@@ -191,7 +198,7 @@ export async function execute(interaction) {
                 } else {
                   await thread.send({
                     content: chunk,
-                    components: [row],
+                    components: [row, row2],
                   });
                 }
               }
@@ -199,7 +206,7 @@ export async function execute(interaction) {
           } else {
             await thread.send({
               content: quote,
-              components: [row],
+              components: [row, row2],
             });
           }
         }
