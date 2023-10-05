@@ -233,11 +233,41 @@ export async function execute(interaction) {
               //   content: `**Question:** ${question.question}`,
               // });
 
+              // in between each quote, send image in dividers folder
+
+              let idx = 0;
+
+              let dividesFilenames = [
+                "waifu.png",
+                "mice.png",
+                "skulls.png",
+                "shapes.png",
+                "kanji.png",
+                "planets-1.png",
+                "planets-2.png",
+                "books.png",
+              ];
+
               for (const quote of quotes) {
                 await thread.send({
                   content: quote,
                   components: [row, row2],
                 });
+                if (idx < quotes.length - 1) {
+                  // choose a random divider
+                  let dividerFilename =
+                    dividesFilenames[
+                      Math.floor(Math.random() * dividesFilenames.length)
+                    ];
+                    console.log(dividerFilename);
+                  await thread.send({
+                    files: [
+                      `./dividers/` + dividerFilename,
+                    ],
+                  });
+                }
+
+                idx++;
               }
               // link to thread
               i.commandName = "search";

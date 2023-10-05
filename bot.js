@@ -128,7 +128,6 @@ client.on("ready", () => {
   );
 
   job2.start();
-  
 });
 
 client.commands = new Collection();
@@ -484,7 +483,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
       const quoteNumber = Number(buttonId.split("qroyale__quote_")[1]);
       // const quotesVotes = JSON.parse(fs.readFileSync("./quotes-votes.json"));
       // last row in db
-      const { data , error } = await supabase
+      const { data, error } = await supabase
         .from("quote-votes")
         .select("*")
         .order("id", { ascending: false })
@@ -653,7 +652,9 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
             const shareUrlHorizontal = json.result.horizontal;
             const shareUrlVertical = json.result.vertical;
-            const res = await interaction.followUp(`Art Prompt: ${prompt}\n\nHorizontal:\n\n${shareUrlHorizontal}\n\nVertical:\n\n${shareUrlVertical}`);
+            const res = await interaction.followUp(
+              `Art Prompt: ${prompt}\n\nHorizontal:\n\n${shareUrlHorizontal}\n\nVertical:\n\n${shareUrlVertical}`
+            );
 
             interaction.commandName = "share";
             await invocationWorkflowSB(interaction, true);
@@ -989,10 +990,10 @@ client.on(Events.InteractionCreate, async (interaction) => {
             .setLabel("share")
             .setStyle(ButtonStyle.Primary);
 
-            const quiz = new ButtonBuilder()
-              .setCustomId("quiz")
-              .setLabel("quiz")
-              .setStyle(ButtonStyle.Primary);
+          const quiz = new ButtonBuilder()
+            .setCustomId("quiz")
+            .setLabel("quiz")
+            .setStyle(ButtonStyle.Primary);
 
           const row = new ActionRowBuilder().addComponents(
             makeAart,
@@ -1040,6 +1041,19 @@ client.on(Events.InteractionCreate, async (interaction) => {
                   components: [],
                 });
               } else {
+                let idx = 0;
+
+                let dividesFilenames = [
+                  "waifu.png",
+                  "mice.png",
+                  "skulls.png",
+                  "shapes.png",
+                  "kanji.png",
+                  "planets-1.png",
+                  "planets-2.png",
+                  "books.png",
+                ];
+
                 for (const quote of quotes) {
                   if (!firstQuote) {
                     firstQuote = await interaction.followUp({
@@ -1052,6 +1066,20 @@ client.on(Events.InteractionCreate, async (interaction) => {
                       components: [row],
                     });
                   }
+
+                  if (idx < quotes.length - 1) {
+                    // choose a random divider
+                    let dividerFilename =
+                      dividesFilenames[
+                        Math.floor(Math.random() * dividesFilenames.length)
+                      ];
+                    console.log(dividerFilename);
+                    await thread.send({
+                      files: [`./dividers/` + dividerFilename],
+                    });
+                  }
+
+                  idx++;
                 }
               }
 
@@ -1103,11 +1131,43 @@ client.on(Events.InteractionCreate, async (interaction) => {
                 components: [],
               });
             } else {
+              // for (const quote of quotes) {
+              //   await thread.send({
+              //     content: quote,
+              //     components: [row],
+              //   });
+              // }
+              let idx = 0;
+
+              let dividesFilenames = [
+                "waifu.png",
+                "mice.png",
+                "skulls.png",
+                "shapes.png",
+                "kanji.png",
+                "planets-1.png",
+                "planets-2.png",
+                "books.png",
+              ];
+
               for (const quote of quotes) {
                 await thread.send({
                   content: quote,
                   components: [row],
                 });
+                if (idx < quotes.length - 1) {
+                  // choose a random divider
+                  let dividerFilename =
+                    dividesFilenames[
+                      Math.floor(Math.random() * dividesFilenames.length)
+                    ];
+                  console.log(dividerFilename);
+                  await thread.send({
+                    files: [`./dividers/` + dividerFilename],
+                  });
+                }
+
+                idx++;
               }
             }
 
