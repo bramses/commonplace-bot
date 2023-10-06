@@ -23,7 +23,7 @@ export async function execute(interaction) {
   
 ## Slash Commands
 
-- \`/wander\` - Wander with a guide through the library of Commonplace Bot. Costs 1 \`wander\` credit. To wander in a book, use \`/wander <book id>\`. You can see the book list [here](https://bramses.notion.site/67debd06db5e43ef84ec87e99b32fe96?v=f105c32bb51342558a3e12a628de655a&pvs=4).
+- \`/wander\` - Wander with a guide through the library of Commonplace Bot. Costs 1 \`wander\` credit. To wander in a book, use \`/wander <book id>\`. You can see the book list [here](https://bramses.notion.site/524f0ba8a12144eeb8c58b4d39c9d10b?v=515f76ed4338466184682a5d76cd76d6&pvs=4).
 - \`/search\` - Find quotes based on your search query. The algorithm is semantic, so if it can't find anything, it will return something that is similar. 
 - \`/random\` - Fetch a random quote from the library. Costs 1 \`random\` credit.
 
