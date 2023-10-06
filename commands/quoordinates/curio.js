@@ -30,6 +30,15 @@ if (process.env.is_production === "true") {
     .setName("wander")
     .setDescription(
       "Wander with the help of a guide through the library of Commonplace Bot."
+    )
+    // add optional command to use book id
+    .addStringOption((option) =>
+      option
+        .setName("book_ids")
+        .setDescription(
+          "Book ID(s) to filter by (comma separated). See book ID list url in the /help command."
+        )
+        .setRequired(false)
     );
 } else {
   curioCommand = new SlashCommandBuilder()
@@ -86,8 +95,6 @@ export async function execute(interaction) {
       // ask user which one they like best
       // show them the quote they picked
       const threeQuotes = [];
-
-      console.log(interaction.options.getString("book_ids"));
 
       if (interaction.options.getString("book_ids")) {
         let bookIDs = interaction.options.getString("book_ids").split(",").map((id) => parseInt(id));
