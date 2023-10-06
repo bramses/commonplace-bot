@@ -18,16 +18,38 @@ import {
 import dotenv from "dotenv";
 dotenv.config();
 
-const { quoordinates_server_random } = process.env;
+const { quoordinates_server_random, quoordinates_server_random_in_book } = process.env;
 
-export async function randomExport() {
+export async function randomExport(amount = 1) {
   try {
     const response = await fetch(quoordinates_server_random, {
-      method: "GET",
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ amount })
     });
     const json = await response.json();
 
-    return json[0];
+    return json;
+  } catch (err) {
+    console.log(err);
+
+    return {
+      text: "Something went wrong. Please try again.",
+      book: null,
+    };
+  }
+}
+
+export async function randomExportWithBookID(bookIds, amount = 1) {
+  try {
+    const response = await fetch(quoordinates_server_random_in_book, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ amount, book_ids: bookIds })
+    });
+    const json = await response.json();
+
+    return json;
   } catch (err) {
     console.log(err);
 
@@ -83,14 +105,17 @@ export async function execute(interaction) {
           });
           return;
         }
-        const random = await randomExport();
+        const randomArr = await randomExport(1);
+
+        let random = randomArr[0];
 
         while (random.text.length > 2000) {
-          random = await randomExport();
+          randomArr = await randomExport(1);
+          random = randomArr[0];
         }
 
         // log random quote to console with keys double-quoted
-        console.log(JSON.stringify(random, null, 2));
+        // console.log(JSON.stringify(random, null, 2));
 
         //   const makeAart = new ButtonBuilder()
         //     .setCustomId("aart_btn")

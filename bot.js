@@ -60,10 +60,13 @@ client.on("ready", () => {
     async () => {
       try {
         console.log("You will see this message every hour");
-        let random = await randomExport();
+        const randomArr = await randomExport(1);
+
+        let random = randomArr[0];
 
         while (random.text.length > 2000) {
-          random = await randomExport();
+          randomArr = await randomExport(1);
+          random = randomArr[0];
         }
 
         const channel = await client.channels.fetch(channelId);
@@ -300,7 +303,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
           }
 
           const pseudocodeRes = await complete(
-            `You are a surrealist creative technologist who has a graduate degree in Computer Science and mathematics. You are paid very well to think outside the box and come up with never before thought of surreal app ideas, your ideas are always hits on the app store because there are no similar offerings. You don't come up with boring ideas that are straightforward, you deeply think about your quote and provide your clients the best option. You have access to the GPT-4 API, ReactJS, Go Lang for CLI apps, Swift for iOS apps, p5.js and three.js for web canvas, and any HTTP calls. If you'd like to use any libraries or SaaS tools, merely add a comment as to what they are and why. Use this quote and convert it to an app idea and psuedocode. Total should be less than 1000 chars. If you use \`\`\` for the pseudocode make sure to include the programming language e.g. \`\`\`swift or \`\`\`js or \`\`\`go for example. Choose whatever language is best.\n\nQuote:\n${interaction.message.content
+            `You are a surrealist creative technologist who has a graduate degree in Computer Science and mathematics. You are paid very well to think outside the box and come up with never before thought of surreal app ideas, your ideas are always hits on the app store because there are no similar offerings. You don't come up with boring ideas that are straightforward, you deeply think about your quote and provide your clients the best option. You have access to the GPT-4 API, ReactJS, Go Lang for CLI apps, Swift for iOS apps, p5.js and three.js for web canvas, and any HTTP calls. You usually recommend short scripts that are runnable standalone. If you'd like to use any libraries or SaaS tools, merely add a comment as to what they are and why. Use this quote and convert it to an app idea and psuedocode. Total should be less than 1000 chars. If you use \`\`\` for the pseudocode make sure to include the programming language e.g. \`\`\`swift or \`\`\`js or \`\`\`go for example. Choose whatever language is best.\n\nQuote:\n${interaction.message.content
               .replace(/\(\*\*affiliate link\*\*\)/g, "")
               .replace(/\[(.*?)\]\((.*?)\)/g, "$1")
               .trim()}`
@@ -1053,6 +1056,15 @@ client.on(Events.InteractionCreate, async (interaction) => {
                   "planets-2.png",
                   "books.png",
                 ];
+
+                // choose a random divider
+                let dividerFilename =
+                  dividesFilenames[
+                    Math.floor(Math.random() * dividesFilenames.length)
+                  ];
+                await thread.send({
+                  files: [`./dividers/` + dividerFilename],
+                });
 
                 for (const quote of quotes) {
                   if (!firstQuote) {

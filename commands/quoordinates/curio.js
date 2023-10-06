@@ -7,7 +7,10 @@ import {
   PermissionFlagsBits,
 } from "discord.js";
 import { lookupBook } from "../../books.js";
-import { randomExport } from "../quoordinates/random.js";
+import {
+  randomExport,
+  randomExportWithBookID,
+} from "../quoordinates/random.js";
 import { complete } from "../../openai_helper.js";
 import { quosLogic } from "./quos.js";
 import { invocationWorkflow, preWorkflow } from "../../invocation.js";
@@ -33,6 +36,15 @@ if (process.env.is_production === "true") {
     .setName("wander")
     .setDescription(
       "Wander with the help of a guide through the library of Commonplace Bot."
+    )
+    // add optional command to use book id
+    .addStringOption((option) =>
+      option
+        .setName("book_ids")
+        .setDescription(
+          "Book ID(s) to filter by (comma separated). See book ID list url in the /help command."
+        )
+        .setRequired(false)
     )
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator);
 }
@@ -74,12 +86,35 @@ export async function execute(interaction) {
       // ask user which one they like best
       // show them the quote they picked
       const threeQuotes = [];
-      for (let i = 0; i < 3; i++) {
-        let random = await randomExport();
-        while (random.text.length > 2000) {
-          random = await randomExport();
+
+      console.log(interaction.options.getString("book_ids"));
+
+      if (interaction.options.getString("book_ids")) {
+        let bookIDs = interaction.options.getString("book_ids").split(",").map((id) => parseInt(id));
+        let randomArr = await randomExportWithBookID(bookIDs, 6);
+        console.log(randomArr);
+        while (threeQuotes.length < 3 && randomArr.length > 0) {
+          let random = randomArr.pop();
+          if (random.text.length > 2000) continue;
+
+          threeQuotes.push(random);
         }
-        threeQuotes.push(random);
+      } else {
+        // start a timer to see how long it takes to get three quotes from randomExport
+        let start = new Date().getTime();
+        let randomArr = await randomExport(6);
+        let end = new Date().getTime();
+        let time = end - start;
+        console.log("Call to randomExport took " + time + " milliseconds.");
+
+        console.log(randomArr.length);
+
+        while (threeQuotes.length < 3 && randomArr.length > 0) {
+          let random = randomArr.pop();
+          if (random.text.length > 2000) continue;
+
+          threeQuotes.push(random);
+        }
       }
 
       // use openai to generate a question about each quote
@@ -259,11 +294,9 @@ export async function execute(interaction) {
                     dividesFilenames[
                       Math.floor(Math.random() * dividesFilenames.length)
                     ];
-                    console.log(dividerFilename);
+                  console.log(dividerFilename);
                   await thread.send({
-                    files: [
-                      `./dividers/` + dividerFilename,
-                    ],
+                    files: [`./dividers/` + dividerFilename],
                   });
                 }
 

@@ -23,10 +23,9 @@ export async function execute(interaction) {
   
 ## Slash Commands
 
+- \`/wander\` - Wander with a guide through the library of Commonplace Bot. Costs 1 \`wander\` credit. To wander in a book, use \`/wander <book id>\`. You can see the book list [here](https://bramses.notion.site/67debd06db5e43ef84ec87e99b32fe96?v=f105c32bb51342558a3e12a628de655a&pvs=4).
 - \`/search\` - Find quotes based on your search query. The algorithm is semantic, so if it can't find anything, it will return something that is similar. 
 - \`/random\` - Fetch a random quote from the library. Costs 1 \`random\` credit.
-- \`/draw\` - Creates an abstract image and art prompt that can be copied into MJ of DALL-E or whatever based on input. Costs 1 \`draw\` credit.
-- \`/wander\` - Wander with a guide through the library of Commonplace Bot. Costs 1 \`wander\` credit.
 
 
 ## Buttons
@@ -41,7 +40,7 @@ React to any message with the floppy disk emoji (💾, : floppy_disk : (no space
 
 ## Community
 
-Visit the #quote-royale channel to participate in the Quote Royale! Every day, 5 quotes are posted and you can vote on which one you like the most. The winner is crowned Champion and is added to the Hall of Fame.
+Visit the #quote-royale channel to participate in the Quote Royale!
 
 ## Open Source
 
