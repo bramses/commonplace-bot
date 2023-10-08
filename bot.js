@@ -14,6 +14,8 @@ import {
   ThreadChannel,
   Partials,
   ChannelType,
+  EmbedBuilder,
+  PermissionFlagsBits
 } from "discord.js";
 import { main } from "./commands/dalle/aart.js";
 import { invocationWorkflow, preWorkflow } from "./invocation.js";
@@ -27,6 +29,7 @@ import { CronJob } from "cron";
 import { randomExport } from "./commands/quoordinates/random.js";
 import { quoteRoyale } from "./quote-royale.js";
 import { processQueue, queue } from "./shared-queue.js";
+import { createModal } from "./modal.js";
 
 import { createClient } from "@supabase/supabase-js";
 
@@ -55,6 +58,7 @@ const supabase = createClient(supabaseUrl, supabaseKey, {
 client.on("ready", () => {
   console.log(`Logged in as ${client.user.tag}!`);
   const channelId = "1151221056951038025"; // replace with your channel ID
+
   const job = new CronJob(
     "*/60 * * * *",
     async () => {
@@ -349,6 +353,38 @@ client.on(Events.InteractionCreate, async (interaction) => {
       });
 
       processQueue();
+    } else if (interaction.customId.includes("add-thoughts-btn")) {
+      const id = interaction.customId.split("_")[1];
+      let messageContent = interaction.message.content
+        .replace(/\[(.*?)\]\((.*?)\)/g, "$1")
+        .replace(/\(\*\*affiliate link\*\*\)/g, "")
+        .trim();
+
+      // remove leading > if it exists
+      if (messageContent.startsWith(">")) {
+        messageContent = messageContent.slice(1);
+      }
+
+      if (messageContent.includes("--")) {
+        messageContent = messageContent.split("--")[0].trim();
+      }
+
+      const modal = await createModal(
+        "Add Thought",
+        "add-thought_" + id,
+        "",
+        "What are your thoughts on this quote?",
+        "My thoughts are...",
+        "thoughtInput"
+      );
+      await interaction.showModal(modal);
+    } else if (interaction.customId.includes("post-thought_")) {
+      // log msg
+      console.log(interaction.message.content);
+      await interaction.reply({
+        content: "Your thought has been added!",
+        ephemeral: true,
+      });
     } else if (interaction.customId === "follow_up_questions") {
       await interaction.deferReply({
         ephemeral: true,
@@ -1239,6 +1275,77 @@ client.on("guildMemberAdd", (member) => {
   channel.send(
     `Welcome to the server, ${member}! Let's get started by typing \`/wander\` in this channel. Then follow the prompts! You may also prefer to go through the official Discord onboarding workflow and introduce yourself here!`
   );
+});
+
+client.on(Events.InteractionCreate, async (interaction) => {
+  if (!interaction.isModalSubmit()) return;
+  if (interaction.customId.includes("add-thought")) {
+    const id = interaction.customId.split("add-thought_")[1];
+
+    if (!id) {
+      await interaction.reply({
+        content: "There was an error while executing this command!",
+        ephemeral: true,
+      });
+      return;
+    }
+
+    const thought = interaction.fields.getTextInputValue("thoughtInput");
+    await interaction.reply({
+      content:
+        "Your `thought` submission was received successfully! " + thought,
+      ephemeral: true,
+    });
+    // const exampleEmbed = new EmbedBuilder()
+    //   .setColor(0x0099ff)
+    //   .setTitle("Some title")
+    //   .setURL("https://discord.js.org/")
+    //   .setAuthor({
+    //     name: "Some name",
+    //     iconURL: "https://i.imgur.com/AfFp7pu.png",
+    //     url: "https://discord.js.org",
+    //   })
+    //   .setDescription("Some description here")
+    //   .setThumbnail("https://i.imgur.com/AfFp7pu.png")
+    //   .addFields(
+    //     { name: "ID", value: id },
+    //     { name: "\u200B", value: "\u200B" },
+    //     { name: "Thought", value: thought },
+    //     { name: "Inline field title", value: "Some value here", inline: true }
+    //   )
+    //   .addFields({
+    //     name: "Inline field title",
+    //     value: "Some value here",
+    //     inline: true,
+    //   })
+    //   .setImage("https://i.imgur.com/AfFp7pu.png")
+    //   .setTimestamp()
+    //   .setFooter({
+    //     text: "Some footer text here",
+    //     iconURL: "https://i.imgur.com/AfFp7pu.png",
+    //   });
+
+      const postBtn = new ButtonBuilder()
+      .setCustomId("post-thought_" + id)
+      .setLabel("Post")
+      .setStyle(ButtonStyle.Primary);
+
+      const row = new ActionRowBuilder().addComponents(
+        postBtn
+      );
+
+      // only show post button if user is admin
+      const admin = PermissionFlagsBits.Administrator;
+      const components = interaction.member.permissions.has(admin)
+        ? [row]
+        : [];
+
+
+      await interaction.followUp({
+        content : `Thought: ${thought}\n\nID: ${id}`,
+        components: components,
+      });
+  }
 });
 
 if (process.env.is_production === "true") {

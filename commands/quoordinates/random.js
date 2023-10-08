@@ -18,7 +18,7 @@ import {
 import dotenv from "dotenv";
 dotenv.config();
 
-const { quoordinates_server_random, quoordinates_server_random_in_book } = process.env;
+const { quoordinates_server_random, quoordinates_server_random_in_book, is_production } = process.env;
 
 export async function randomExport(amount = 1) {
   try {
@@ -105,8 +105,7 @@ export async function execute(interaction) {
           });
           return;
         }
-        const randomArr = await randomExport(1);
-
+        let randomArr = await randomExport(1);
         let random = randomArr[0];
 
         while (random.text.length > 2000) {
@@ -117,10 +116,10 @@ export async function execute(interaction) {
         // log random quote to console with keys double-quoted
         // console.log(JSON.stringify(random, null, 2));
 
-        //   const makeAart = new ButtonBuilder()
-        //     .setCustomId("aart_btn")
-        //     .setLabel("draw")
-        //     .setStyle(ButtonStyle.Primary);
+          const makeAart = new ButtonBuilder()
+            .setCustomId("aart_btn")
+            .setLabel("draw")
+            .setStyle(ButtonStyle.Primary);
 
         // const repost = new ButtonBuilder()
         //   .setCustomId("repost")
@@ -130,12 +129,12 @@ export async function execute(interaction) {
         const learnMore = new ButtonBuilder()
           .setCustomId("quos_learn_more")
           .setLabel("delve")
-          .setStyle(ButtonStyle.Primary);
+          .setStyle(ButtonStyle.Secondary);
 
         const summarize = new ButtonBuilder()
           .setCustomId("summarize")
           .setLabel("tldr")
-          .setStyle(ButtonStyle.Primary);
+          .setStyle(ButtonStyle.Secondary);
 
         const share = new ButtonBuilder()
           .setCustomId("share")
@@ -163,6 +162,13 @@ export async function execute(interaction) {
           .setLabel("pseudocode")
           .setStyle(ButtonStyle.Primary);
 
+        const editBtn = new ButtonBuilder()
+          .setCustomId("add-thoughts-btn_" + random.id)
+          .setLabel("+ thought")
+          .setStyle(ButtonStyle.Success);
+
+        console.log("random.id" + random.id);
+
         const row = new ActionRowBuilder().addComponents(
           // repost,
           learnMore,
@@ -172,12 +178,43 @@ export async function execute(interaction) {
           pseudocode,
         );
 
+        let transformRow = null
+        let engageRow = null
+        let metaRow = null
+
+        transformRow = new ActionRowBuilder().addComponents(
+          makeAart,
+          quiz,
+          pseudocode,
+          share,
+        )
+        engageRow = new ActionRowBuilder().addComponents(
+          learnMore,
+          summarize,
+        )
+        metaRow = new ActionRowBuilder().addComponents(
+          editBtn
+        )
+
+        const components = []
+
+        if (transformRow) {
+          components.push(transformRow)
+        }
+        if (engageRow) {
+          components.push(engageRow)
+        }
+        if (metaRow && is_production === "false") {
+          components.push(metaRow)
+        }
+          
+
         // \n\n[cover](${random.book.cover_image_url})
         const res = await interaction.channel.send({
           content: `> ${random.text}\n\n-- [${
             random.book.title
           } (**affiliate link**)](${await lookupBook(random.book.title)})`,
-          components: [row],
+          components: components,
         });
 
         interaction.commandName = "random";

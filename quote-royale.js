@@ -31,7 +31,7 @@ const supabase = createClient(supabaseUrl, supabaseKey, {
 
 const createQuoteRoyaleChannel = async (client) => {
   const guild = await client.guilds.fetch("1059980663404646420");
-  const categoryID = "1151964359514411038"
+  const categoryID = "1151964359514411038";
 
   const channel = await guild.channels.create({
     name: `quote-royale-${new Date().toISOString().split("T")[0]}`,
@@ -46,19 +46,32 @@ const createQuoteRoyaleChannel = async (client) => {
 const postQuotes = async (channel) => {
   const quotes = [];
 
-  for (let i = 0; i < 5; i++) {
-    let random = await randomExport();
-    while (random.text.length > 1900) {
-      random = await randomExport();
-    }
+  let start = new Date().getTime();
+  let randomArr = await randomExport(10);
+  let end = new Date().getTime();
+  let time = end - start;
+  console.log("Call to randomExport (quote royale) took " + time + " milliseconds.");
+
+  while (quotes.length < 5 && randomArr.length > 0) {
+    let random = randomArr.pop();
+    if (random.text.length > 2000) continue;
+
     quotes.push(random);
   }
 
-  // send each quote as a separate message 
+  // for (let i = 0; i < 5; i++) {
+  //   let randomArr = await randomExport(10);
+  //   while (random.text.length > 1900) {
+  //     random = await randomExport();
+  //   }
+  //   quotes.push(random);
+  // }
+
+  // send each quote as a separate message
   let i = 1;
   for (const quote of quotes) {
     await channel.send({
-      content: `Quote ${i++}:\n\n
+      content: `**Quote ${i++}:**\n\n
       > ${quote.text}\n\n-- [${
         quote.book.title
       } (**affiliate link**)](${await lookupBook(quote.book.title)})`,
@@ -105,7 +118,13 @@ const postQuotes = async (channel) => {
   // upsert in supabase table quote-votes with schema { quotes: jsonb, votes: jsonb, voters: jsonb }
   const { data, error } = await supabase
     .from("quote-votes")
-    .insert([{ quotes: quotesWithVotes.quotes, votes: quotesWithVotes.votes, voters: quotesWithVotes.voters }]);
+    .insert([
+      {
+        quotes: quotesWithVotes.quotes,
+        votes: quotesWithVotes.votes,
+        voters: quotesWithVotes.voters,
+      },
+    ]);
 
   return message;
 };
@@ -147,7 +166,6 @@ export const quoteRoyale = async (client) => {
       existingChannel.name.split("-")[4];
     console.log(`today: ${today}, channelDate: ${channelDate}`);
 
-
     if (today === channelDate) {
       // channel is up to date, do nothing
       return existingChannel;
@@ -184,23 +202,23 @@ export const quoteRoyale = async (client) => {
     await general.send({
       content: `THE WINNER OF QUOTE ROYALE ${channelDate} IS...\n\n> ${
         winner.quote.text
-      }\n\n-- [${winner.quote.book.title} (**affiliate link**)](${await lookupBook(
+      }\n\n-- [${
         winner.quote.book.title
-      )}).
+      } (**affiliate link**)](${await lookupBook(winner.quote.book.title)}).
         
         Vote for your favorite from the next five contenders in Quote Royale! <#${
-            channel.id
+          channel.id
         }>`,
     });
     await winnersCircle.send({
       content: `THE WINNER OF QUOTE ROYALE ${channelDate} IS...\n\n> ${
         winner.quote.text
-      }\n\n-- [${winner.quote.book.title} (**affiliate link**)](${await lookupBook(
+      }\n\n-- [${
         winner.quote.book.title
-      )}).
+      } (**affiliate link**)](${await lookupBook(winner.quote.book.title)}).
         
         Vote for your favorite from the next five contenders in Quote Royale! <#${
-            channel.id
+          channel.id
         }>`,
     });
   }
