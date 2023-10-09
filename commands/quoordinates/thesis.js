@@ -93,8 +93,14 @@ export async function execute(interaction) {
             
 
           console.log(thesisText);
+
+          await interaction.channel.send({
+            content: thesisText.join("\n\n"),
+            ephemeral: true,
+          });
         }
        
+        
     
 
         interaction.commandName = "thesis";
