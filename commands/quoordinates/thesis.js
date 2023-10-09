@@ -17,7 +17,7 @@ let thesisCommand = null;
 
 if (process.env.is_production === "true") {
   thesisCommand = new SlashCommandBuilder()
-    .setName("[NYI] thesis")
+    .setName("nyi-thesis")
     .setDescription(
       "Builds a thesis from every message in thread responded to with :thesis:"
     );
