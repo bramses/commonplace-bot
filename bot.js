@@ -1242,7 +1242,11 @@ client.on(Events.InteractionCreate, async (interaction) => {
     if (!command) return;
 
     try {
-      await command.execute(interaction);
+      if (command.data.name === 'thesis') { // TODO i may not need this in the long run but keeping it for now
+        await command.execute(interaction, client);
+      } else {
+        await command.execute(interaction);
+      }
     } catch (error) {
       console.error(error);
       console.log(
