@@ -97,7 +97,10 @@ export async function execute(interaction) {
       const threeQuotes = [];
 
       if (interaction.options.getString("book_ids")) {
-        let bookIDs = interaction.options.getString("book_ids").split(",").map((id) => parseInt(id));
+        let bookIDs = interaction.options
+          .getString("book_ids")
+          .split(",")
+          .map((id) => parseInt(id));
         let randomArr = await randomExportWithBookID(bookIDs, 6);
         console.log(randomArr);
         while (threeQuotes.length < 3 && randomArr.length > 0) {
@@ -238,17 +241,41 @@ export async function execute(interaction) {
                 .setCustomId("aart_btn")
                 .setLabel("draw")
                 .setStyle(ButtonStyle.Primary);
+
+              // const repost = new ButtonBuilder()
+              //   .setCustomId("repost")
+              //   .setLabel("new-home")
+              //   .setStyle(ButtonStyle.Primary);
+
               const learnMore = new ButtonBuilder()
                 .setCustomId("quos_learn_more")
                 .setLabel("delve")
-                .setStyle(ButtonStyle.Primary);
+                .setStyle(ButtonStyle.Secondary);
+
               const summarize = new ButtonBuilder()
                 .setCustomId("summarize")
                 .setLabel("tldr")
-                .setStyle(ButtonStyle.Primary);
+                .setStyle(ButtonStyle.Secondary);
+
+              const speak = new ButtonBuilder()
+                .setCustomId("speak")
+                .setLabel("speak")
+                .setStyle(ButtonStyle.Secondary);
+
               const share = new ButtonBuilder()
                 .setCustomId("share")
                 .setLabel("share")
+                .setStyle(ButtonStyle.Primary);
+
+              // idk if this is more helpful than delve
+              const followUpQuestions = new ButtonBuilder()
+                .setCustomId("follow_up_questions")
+                .setLabel("follow-up")
+                .setStyle(ButtonStyle.Primary);
+
+              const cloze = new ButtonBuilder()
+                .setCustomId("cloze_deletion")
+                .setLabel("cloze")
                 .setStyle(ButtonStyle.Primary);
 
               const quiz = new ButtonBuilder()
@@ -261,15 +288,52 @@ export async function execute(interaction) {
                 .setLabel("pseudocode")
                 .setStyle(ButtonStyle.Primary);
 
-              const row = new ActionRowBuilder().addComponents(
+              // const editBtn = new ButtonBuilder()
+              //   .setCustomId("add-thoughts-btn_" + q.id)
+              //   .setLabel("+ thought")
+              //   .setStyle(ButtonStyle.Success);
+
+              // const row = new ActionRowBuilder().addComponents(
+              //   // repost,
+              //   learnMore,
+              //   summarize,
+              //   share,
+              //   quiz,
+              //   pseudocode,
+              // );
+
+              let transformRow = null;
+              let engageRow = null;
+              let metaRow = null;
+
+              transformRow = new ActionRowBuilder().addComponents(
                 makeAart,
+                quiz,
+                pseudocode,
+                share
+              );
+              engageRow = new ActionRowBuilder().addComponents(
                 learnMore,
                 summarize,
-                share,
-                quiz
+                speak
               );
+              // metaRow = new ActionRowBuilder().addComponents(
+              //   editBtn
+              // );
 
-              const row2 = new ActionRowBuilder().addComponents(pseudocode);
+              const components = [];
+
+              if (transformRow) {
+                components.push(transformRow);
+              }
+              if (engageRow) {
+                components.push(engageRow);
+              }
+              if (metaRow && is_production === "false") {
+                components.push(metaRow);
+              }
+
+              console.log(components);
 
               // await thread.send({
               //   content: `**Question:** ${question.question}`,
@@ -293,7 +357,7 @@ export async function execute(interaction) {
               for (const quote of quotes) {
                 await thread.send({
                   content: quote,
-                  components: [row, row2],
+                  components: components,
                 });
                 if (idx < quotes.length - 1) {
                   // choose a random divider

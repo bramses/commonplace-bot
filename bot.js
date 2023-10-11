@@ -15,7 +15,7 @@ import {
   Partials,
   ChannelType,
   EmbedBuilder,
-  PermissionFlagsBits
+  PermissionFlagsBits,
 } from "discord.js";
 import { main } from "./commands/dalle/aart.js";
 import { invocationWorkflow, preWorkflow } from "./invocation.js";
@@ -32,6 +32,7 @@ import { processQueue, queue } from "./shared-queue.js";
 import { createModal } from "./modal.js";
 
 import { createClient } from "@supabase/supabase-js";
+import { tts } from "./tts.js";
 
 const client = new Client({
   intents: [
@@ -353,6 +354,62 @@ client.on(Events.InteractionCreate, async (interaction) => {
       });
 
       processQueue();
+    } else if (interaction.customId === "speak") {
+      // send message to channel files: [attachment]
+
+      try {
+        const sentMessage = await interaction.reply({
+          content: `<@${interaction.user.id}>, your request has been added to the queue.`,
+          ephemeral: true,
+        });
+
+        queue.push({
+          task: async (user, message) => {
+            interaction.commandName = "speech";
+            if (!(await preWorkflowSB(interaction))) {
+              await interaction.editReply({
+                content:
+                  "You have reached your monthly limit for this command: " +
+                  interaction.commandName +
+                  ". You can get more invocations by supporting the project [here](https://www.bramadams.dev/discord/)!",
+                ephemeral: true,
+              });
+              return;
+            }
+
+            // get content of message rplace the affiliate link with nothing
+            const messageContent = interaction.message.content
+              .replace(/\(\*\*affiliate link\*\*\)/g, "")
+              .replace(/\[(.*?)\]\((.*?)\)/g, "$1")
+              .replace(/--/, "From: ")
+              .trim();
+
+            const ttsUrl = await tts(messageContent);
+
+            const res = await interaction.followUp({
+              content: ``,
+              files: [ttsUrl],
+            });
+
+            interaction.commandName = "speech";
+            await invocationWorkflowSB(interaction, false, messageContent);
+
+            await interaction.editReply({
+              content: `<@${interaction.user.id}>, your \`/speech\` request has been processed. Link to result: ${res.url}`,
+              ephemeral: true,
+            });
+          },
+          user: interaction.user,
+          message: sentMessage,
+          interaction: interaction,
+        });
+
+        processQueue();
+      } catch (err) {
+        await interaction.reply({
+          content: `Something went wrong: ${err}`,
+        });
+      }
     } else if (interaction.customId.includes("add-thoughts-btn")) {
       const id = interaction.customId.split("_")[1];
       let messageContent = interaction.message.content
@@ -1242,7 +1299,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
     if (!command) return;
 
     try {
-      if (command.data.name === 'thesis') { // TODO i may not need this in the long run but keeping it for now
+      if (command.data.name === "thesis") {
+        // TODO i may not need this in the long run but keeping it for now
         await command.execute(interaction, client);
       } else {
         await command.execute(interaction);
@@ -1329,26 +1387,21 @@ client.on(Events.InteractionCreate, async (interaction) => {
     //     iconURL: "https://i.imgur.com/AfFp7pu.png",
     //   });
 
-      const postBtn = new ButtonBuilder()
+    const postBtn = new ButtonBuilder()
       .setCustomId("post-thought_" + id)
       .setLabel("Post")
       .setStyle(ButtonStyle.Primary);
 
-      const row = new ActionRowBuilder().addComponents(
-        postBtn
-      );
+    const row = new ActionRowBuilder().addComponents(postBtn);
 
-      // only show post button if user is admin
-      const admin = PermissionFlagsBits.Administrator;
-      const components = interaction.member.permissions.has(admin)
-        ? [row]
-        : [];
+    // only show post button if user is admin
+    const admin = PermissionFlagsBits.Administrator;
+    const components = interaction.member.permissions.has(admin) ? [row] : [];
 
-
-      await interaction.followUp({
-        content : `Thought: ${thought}\n\nID: ${id}`,
-        components: components,
-      });
+    await interaction.followUp({
+      content: `Thought: ${thought}\n\nID: ${id}`,
+      components: components,
+    });
   }
 });
 

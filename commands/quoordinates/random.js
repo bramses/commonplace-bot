@@ -4,7 +4,7 @@ import {
   ActionRowBuilder,
   ButtonStyle,
   ChannelType,
-  PermissionFlagsBits
+  PermissionFlagsBits,
 } from "discord.js";
 // import config from "../../config.json" assert { "type": "json" };
 import { lookupBook } from "../../books.js";
@@ -136,6 +136,11 @@ export async function execute(interaction) {
           .setLabel("tldr")
           .setStyle(ButtonStyle.Secondary);
 
+        const speak = new ButtonBuilder()
+          .setCustomId("speak")
+          .setLabel("speak")
+          .setStyle(ButtonStyle.Secondary);
+
         const share = new ButtonBuilder()
           .setCustomId("share")
           .setLabel("share")
@@ -169,14 +174,14 @@ export async function execute(interaction) {
 
         console.log("random.id" + random.id);
 
-        const row = new ActionRowBuilder().addComponents(
-          // repost,
-          learnMore,
-          summarize,
-          share,
-          quiz,
-          pseudocode,
-        );
+        // const row = new ActionRowBuilder().addComponents(
+        //   // repost,
+        //   learnMore,
+        //   summarize,
+        //   share,
+        //   quiz,
+        //   pseudocode,
+        // );
 
         let transformRow = null
         let engageRow = null
@@ -191,6 +196,7 @@ export async function execute(interaction) {
         engageRow = new ActionRowBuilder().addComponents(
           learnMore,
           summarize,
+          speak,
         )
         metaRow = new ActionRowBuilder().addComponents(
           editBtn
