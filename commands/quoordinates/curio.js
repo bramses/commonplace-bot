@@ -214,6 +214,8 @@ export async function execute(interaction) {
                 questions[parseInt(i.customId.split("_")[3]) - 1];
               const quoordinate = await quosLogic(question.question);
 
+              const ids = [];
+
               const quotesPromises = quoordinate.map(async (q) => {
                 const bookLink = await lookupBook(q.title);
                 const quote = `> ${q.text}\n\n-- ${
@@ -221,7 +223,18 @@ export async function execute(interaction) {
                     ? `[${q.title} (**affiliate link**)](${bookLink})`
                     : q.title
                 }\n\n`;
-                return quote.length < 2000 ? quote : null;
+                if (quote.length < 2000) {
+                  console.log(q);
+                  ids.push({
+                    id: q.id,
+                    text: q.text,
+                    title: q.title,
+                    thoughts: q.thoughts,
+                  });
+                  return quote;
+                } else {
+                  return null;
+                }
               });
 
               const quotes = (await Promise.all(quotesPromises)).filter(
@@ -229,7 +242,7 @@ export async function execute(interaction) {
               );
 
               const startMessage = await interaction.channel.send(
-                `${question.question}`
+                `**Question:** ${question.question}`
               );
               const thread = await startMessage.startThread({
                 name: question.question.slice(0, 50) + "...",

@@ -167,7 +167,7 @@ export async function execute(interaction) {
           .setLabel("pseudocode")
           .setStyle(ButtonStyle.Primary);
 
-        const editBtn = new ButtonBuilder()
+        const thoughtsBtn = new ButtonBuilder()
           .setCustomId("add-thoughts-btn_" + random.id)
           .setLabel("+ thought")
           .setStyle(ButtonStyle.Success);
@@ -199,7 +199,7 @@ export async function execute(interaction) {
           speak,
         )
         metaRow = new ActionRowBuilder().addComponents(
-          editBtn
+          thoughtsBtn
         )
 
         const components = []

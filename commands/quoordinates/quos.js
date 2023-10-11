@@ -5,7 +5,7 @@ import {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
-  PermissionFlagsBits
+  PermissionFlagsBits,
 } from "discord.js";
 import { invocationWorkflow, preWorkflow } from "../../invocation.js";
 import { lookupBook } from "../../books.js";
@@ -34,7 +34,7 @@ export async function quosLogic(query) {
   return json;
 }
 
-export let randomCommand 
+export let randomCommand;
 
 if (process.env.is_production === "true") {
   randomCommand = new SlashCommandBuilder()
@@ -60,7 +60,7 @@ if (process.env.is_production === "true") {
         )
         .setRequired(true)
     )
-    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator);
 }
 
 export let data = randomCommand;
@@ -109,14 +109,29 @@ export async function execute(interaction) {
         //   )
         //   .filter((q) => q.length < 2000); // still filtering out quotes that are too long because the UX is bad but logic is in conditional below "logic for splitting quotes into multiple messages"
 
+        const ids = [];
+
         const quotesPromises = quoordinate.map(async (q) => {
           const bookLink = await lookupBook(q.title);
           const quote = `> ${q.text}\n\n-- ${
-            bookLink ? `[${q.title} (**affiliate link**)](${bookLink})` : q.title
+            bookLink
+              ? `[${q.title} (**affiliate link**)](${bookLink})`
+              : q.title
           }\n\n`;
-          return quote.length < 2000 ? quote : null;
+          if (quote.length < 2000) {
+            console.log(q);
+            ids.push({
+              id: q.id,
+              text: q.text,
+              title: q.title,
+              thoughts: q.thoughts,
+            });
+            return quote;
+          } else {
+            return null;
+          }
         });
-        
+
         const quotes = (await Promise.all(quotesPromises)).filter(Boolean);
 
         const startMessage = await interaction.channel.send(
@@ -133,19 +148,40 @@ export async function execute(interaction) {
           .setLabel("draw")
           .setStyle(ButtonStyle.Primary);
 
+        // const repost = new ButtonBuilder()
+        //   .setCustomId("repost")
+        //   .setLabel("new-home")
+        //   .setStyle(ButtonStyle.Primary);
+
         const learnMore = new ButtonBuilder()
           .setCustomId("quos_learn_more")
           .setLabel("delve")
-          .setStyle(ButtonStyle.Primary);
+          .setStyle(ButtonStyle.Secondary);
 
         const summarize = new ButtonBuilder()
           .setCustomId("summarize")
           .setLabel("tldr")
-          .setStyle(ButtonStyle.Primary);
+          .setStyle(ButtonStyle.Secondary);
+
+        const speak = new ButtonBuilder()
+          .setCustomId("speak")
+          .setLabel("speak")
+          .setStyle(ButtonStyle.Secondary);
 
         const share = new ButtonBuilder()
           .setCustomId("share")
           .setLabel("share")
+          .setStyle(ButtonStyle.Primary);
+
+        // idk if this is more helpful than delve
+        const followUpQuestions = new ButtonBuilder()
+          .setCustomId("follow_up_questions")
+          .setLabel("follow-up")
+          .setStyle(ButtonStyle.Primary);
+
+        const cloze = new ButtonBuilder()
+          .setCustomId("cloze_deletion")
+          .setLabel("cloze")
           .setStyle(ButtonStyle.Primary);
 
         const quiz = new ButtonBuilder()
@@ -153,62 +189,100 @@ export async function execute(interaction) {
           .setLabel("quiz")
           .setStyle(ButtonStyle.Primary);
 
-
         const pseudocode = new ButtonBuilder()
           .setCustomId("pseudocode")
           .setLabel("pseudocode")
           .setStyle(ButtonStyle.Primary);
 
-        const row = new ActionRowBuilder().addComponents(
+        let transformRow = null;
+        let engageRow = null;
+        let metaRow = null;
+
+        transformRow = new ActionRowBuilder().addComponents(
           makeAart,
+          quiz,
+          pseudocode,
+          share
+        );
+        engageRow = new ActionRowBuilder().addComponents(
           learnMore,
           summarize,
-          share,
-          quiz,
+          speak
         );
 
-        const row2 = new ActionRowBuilder().addComponents(pseudocode);
+        const components = [];
+
+        if (transformRow) {
+          components.push(transformRow);
+        }
+        if (engageRow) {
+          components.push(engageRow);
+        }
+
+        let idx = 0;
+
+        let dividesFilenames = [
+          "waifu.png",
+          "mice.png",
+          "skulls.png",
+          "shapes.png",
+          "kanji.png",
+          "planets-1.png",
+          "planets-2.png",
+          "books.png",
+        ];
+
 
         for (const quote of quotes) {
-          if (quote.length > 2000) {
-            // logic for splitting quotes into multiple messages
-            // split into multiple messages by last word within 2000 ch and add (cont) if quote is too long the last should have the row
+          // fetch id by matching quote.text to ids.text
+          const matched = ids.find(
+            (id) => id.text === quote.split("\n\n")[0].replace("> ", "")
+          );
 
-            const title = quote.split("\n\n")[1];
+          const thoughtsBtn = new ButtonBuilder()
+            .setCustomId("add-thoughts-btn_" + matched.id)
+            .setLabel("+ thought")
+            .setStyle(ButtonStyle.Success);
 
-            const strippedQuote = quote.replace(title, "");
-
-            if (strippedQuote.length < 2000) {
-              await thread.send({
-                content: strippedQuote,
-                components: [row, row2],
-              });
-
-              await thread.send({
-                content: title,
-              });
-            } else {
-              const chunks = chunk(quote, 1990, { min: 1000, max: 1990 });
-              for (const chunk of chunks) {
-                // if not last chunk
-                if (chunk !== chunks[chunks.length - 1]) {
-                  await thread.send({
-                    content: chunk + "(cont)",
-                  });
-                } else {
-                  await thread.send({
-                    content: chunk,
-                    components: [row, row2],
-                  });
-                }
-              }
-            }
-          } else {
-            await thread.send({
+          const forLoopRow = new ActionRowBuilder().addComponents(thoughtsBtn);
+         
+          const qRes = await thread.send({
               content: quote,
-              components: [row, row2],
+              components: components.concat(forLoopRow),
+            });
+          
+
+          if (matched.thoughts) {
+            console.log(typeof interaction.user.id);
+
+            for (const thought of matched.thoughts) {
+              console.log(String(thought.userId));
+              console.log(interaction.user.id);
+              console.log(String(thought.userId) === interaction.user.id);
+
+              // reply to qRes
+              
+              await qRes.reply({
+                content: `<@${thought.userId}> **added a thought on ${
+                  thought.createdAt.split("T")[0]
+                }**:\n\n${thought.thought}`,
+              });
+            }
+          }
+
+          if (idx < quotes.length - 1) {
+            // choose a random divider
+            let dividerFilename =
+              dividesFilenames[
+                Math.floor(Math.random() * dividesFilenames.length)
+              ];
+            console.log(dividerFilename);
+            await thread.send({
+              files: [`./dividers/` + dividerFilename],
             });
           }
+
+          idx++;
         }
 
         await invocationWorkflowSB(interaction);

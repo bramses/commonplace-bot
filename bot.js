@@ -1387,21 +1387,30 @@ client.on(Events.InteractionCreate, async (interaction) => {
     //     iconURL: "https://i.imgur.com/AfFp7pu.png",
     //   });
 
-    const postBtn = new ButtonBuilder()
-      .setCustomId("post-thought_" + id)
-      .setLabel("Post")
-      .setStyle(ButtonStyle.Primary);
+    // const postBtn = new ButtonBuilder()
+    //   .setCustomId("post-thought_" + id)
+    //   .setLabel("Post")
+    //   .setStyle(ButtonStyle.Primary);
 
-    const row = new ActionRowBuilder().addComponents(postBtn);
+    // const row = new ActionRowBuilder().addComponents(postBtn);
 
-    // only show post button if user is admin
-    const admin = PermissionFlagsBits.Administrator;
-    const components = interaction.member.permissions.has(admin) ? [row] : [];
+    // // only show post button if user is admin
+    // const admin = PermissionFlagsBits.Administrator;
+    // const components = interaction.member.permissions.has(admin) ? [row] : [];
 
-    await interaction.followUp({
-      content: `Thought: ${thought}\n\nID: ${id}`,
-      components: components,
+    // post thought to process.env.quoordinates_server_add_thought { userId , highlightId, thought }
+    await fetch(process.env.quoordinates_server_add_thought, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ userId: interaction.user.id, highlightId: id, thought }),
     });
+
+    // await interaction.followUp({
+    //   content: `Thought: ${thought}\n\nID: ${id}`,
+    //   components: components,
+    // });
   }
 });
 
