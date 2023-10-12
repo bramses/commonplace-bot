@@ -301,20 +301,6 @@ export async function execute(interaction) {
                 .setLabel("pseudocode")
                 .setStyle(ButtonStyle.Primary);
 
-              // const editBtn = new ButtonBuilder()
-              //   .setCustomId("add-thoughts-btn_" + q.id)
-              //   .setLabel("+ thought")
-              //   .setStyle(ButtonStyle.Success);
-
-              // const row = new ActionRowBuilder().addComponents(
-              //   // repost,
-              //   learnMore,
-              //   summarize,
-              //   share,
-              //   quiz,
-              //   pseudocode,
-              // );
-
               let transformRow = null;
               let engageRow = null;
               let metaRow = null;
@@ -330,9 +316,6 @@ export async function execute(interaction) {
                 summarize,
                 speak
               );
-              // metaRow = new ActionRowBuilder().addComponents(
-              //   editBtn
-              // );
 
               const components = [];
 
@@ -342,17 +325,6 @@ export async function execute(interaction) {
               if (engageRow) {
                 components.push(engageRow);
               }
-              if (metaRow && is_production === "false") {
-                components.push(metaRow);
-              }
-
-              console.log(components);
-
-              // await thread.send({
-              //   content: `**Question:** ${question.question}`,
-              // });
-
-              // in between each quote, send image in dividers folder
 
               let idx = 0;
 
@@ -368,10 +340,42 @@ export async function execute(interaction) {
               ];
 
               for (const quote of quotes) {
-                await thread.send({
-                  content: quote,
-                  components: components,
-                });
+                // fetch id by matching quote.text to ids.text
+                const matched = ids.find(
+                  (id) => id.text === quote.split("\n\n")[0].replace("> ", "")
+                );
+      
+                const thoughtsBtn = new ButtonBuilder()
+                  .setCustomId("add-thoughts-btn_" + matched.id)
+                  .setLabel("+ thought")
+                  .setStyle(ButtonStyle.Success);
+      
+                const forLoopRow = new ActionRowBuilder().addComponents(thoughtsBtn);
+               
+                const qRes = await thread.send({
+                    content: quote,
+                    components: components.concat(forLoopRow),
+                  });
+                
+      
+                if (matched.thoughts) {
+                  console.log(typeof interaction.user.id);
+      
+                  for (const thought of matched.thoughts) {
+                    console.log(String(thought.userId));
+                    console.log(interaction.user.id);
+                    console.log(String(thought.userId) === interaction.user.id);
+      
+                    // reply to qRes
+                    
+                    await qRes.reply({
+                      content: `<@${thought.userId}> **added a thought on ${
+                        thought.createdAt.split("T")[0]
+                      }**:\n\n${thought.thought}`,
+                    });
+                  }
+                }
+      
                 if (idx < quotes.length - 1) {
                   // choose a random divider
                   let dividerFilename =
@@ -383,7 +387,7 @@ export async function execute(interaction) {
                     files: [`./dividers/` + dividerFilename],
                   });
                 }
-
+      
                 idx++;
               }
               // link to thread

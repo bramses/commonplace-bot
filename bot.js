@@ -1071,19 +1071,40 @@ client.on(Events.InteractionCreate, async (interaction) => {
             .setLabel("draw")
             .setStyle(ButtonStyle.Primary);
 
+          // const repost = new ButtonBuilder()
+          //   .setCustomId("repost")
+          //   .setLabel("new-home")
+          //   .setStyle(ButtonStyle.Primary);
+
           const learnMore = new ButtonBuilder()
             .setCustomId("quos_learn_more")
             .setLabel("delve")
-            .setStyle(ButtonStyle.Primary);
+            .setStyle(ButtonStyle.Secondary);
 
           const summarize = new ButtonBuilder()
             .setCustomId("summarize")
             .setLabel("tldr")
-            .setStyle(ButtonStyle.Primary);
+            .setStyle(ButtonStyle.Secondary);
+
+          const speak = new ButtonBuilder()
+            .setCustomId("speak")
+            .setLabel("speak")
+            .setStyle(ButtonStyle.Secondary);
 
           const share = new ButtonBuilder()
             .setCustomId("share")
             .setLabel("share")
+            .setStyle(ButtonStyle.Primary);
+
+          // idk if this is more helpful than delve
+          const followUpQuestions = new ButtonBuilder()
+            .setCustomId("follow_up_questions")
+            .setLabel("follow-up")
+            .setStyle(ButtonStyle.Primary);
+
+          const cloze = new ButtonBuilder()
+            .setCustomId("cloze_deletion")
+            .setLabel("cloze")
             .setStyle(ButtonStyle.Primary);
 
           const quiz = new ButtonBuilder()
@@ -1091,13 +1112,35 @@ client.on(Events.InteractionCreate, async (interaction) => {
             .setLabel("quiz")
             .setStyle(ButtonStyle.Primary);
 
-          const row = new ActionRowBuilder().addComponents(
+          const pseudocode = new ButtonBuilder()
+            .setCustomId("pseudocode")
+            .setLabel("pseudocode")
+            .setStyle(ButtonStyle.Primary);
+
+          let transformRow = null;
+          let engageRow = null;
+          let metaRow = null;
+
+          transformRow = new ActionRowBuilder().addComponents(
             makeAart,
+            quiz,
+            pseudocode,
+            share
+          );
+          engageRow = new ActionRowBuilder().addComponents(
             learnMore,
             summarize,
-            share,
-            quiz
+            speak
           );
+
+          const components = [];
+
+          if (transformRow) {
+            components.push(transformRow);
+          }
+          if (engageRow) {
+            components.push(engageRow);
+          }
 
           // get other messages in current thread
           if (interaction.channel instanceof ThreadChannel) {
@@ -1106,6 +1149,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
             if (thread instanceof ThreadChannel) {
               const messages = await thread.messages.fetch();
               const messagesContent = messages.map((m) => m.content);
+
+              const ids = [];
 
               const quotesPromises = similarQuos
                 .filter((q) => {
@@ -1117,12 +1162,25 @@ client.on(Events.InteractionCreate, async (interaction) => {
                 })
                 .map(async (q) => {
                   const bookLink = await lookupBook(q.title);
+
                   const quote = `> ${q.text}\n\n-- ${
                     bookLink
                       ? `[${q.title} (**affiliate link**)](${bookLink})`
                       : q.title
                   }\n\n`;
-                  return quote.length < 2000 ? quote : null;
+                  if (quote.length < 2000) {
+                    console.log(q);
+                    ids.push({
+                      id: q.id,
+                      text: q.text,
+                      title: q.title,
+                      thoughts: q.thoughts,
+                    });
+
+                    return quote;
+                  } else {
+                    return null;
+                  }
                 });
 
               const quotes = (await Promise.all(quotesPromises)).filter(
@@ -1160,15 +1218,28 @@ client.on(Events.InteractionCreate, async (interaction) => {
                 });
 
                 for (const quote of quotes) {
+                  const matched = ids.find(
+                    (id) => id.text === quote.split("\n\n")[0].replace("> ", "")
+                  );
+
+                  const thoughtsBtn = new ButtonBuilder()
+                    .setCustomId("add-thoughts-btn_" + matched.id)
+                    .setLabel("+ thought")
+                    .setStyle(ButtonStyle.Success);
+
+                  const forLoopRow = new ActionRowBuilder().addComponents(
+                    thoughtsBtn
+                  );
+
                   if (!firstQuote) {
                     firstQuote = await interaction.followUp({
                       content: quote,
-                      components: [row],
+                      components: components.concat(forLoopRow),
                     });
                   } else {
                     await interaction.followUp({
                       content: quote,
-                      components: [row],
+                      components: components.concat(forLoopRow),
                     });
                   }
 
@@ -1404,7 +1475,11 @@ client.on(Events.InteractionCreate, async (interaction) => {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ userId: interaction.user.id, highlightId: id, thought }),
+      body: JSON.stringify({
+        userId: interaction.user.id,
+        highlightId: id,
+        thought,
+      }),
     });
 
     // await interaction.followUp({
