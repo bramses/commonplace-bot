@@ -1426,7 +1426,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
     const thought = interaction.fields.getTextInputValue("thoughtInput");
     await interaction.reply({
       content:
-        `<@${interaction.user.id},your \`thought\` submission was received successfully! ${thought}`,
+        `<@${interaction.user.id}>, your \`thought\` submission was received successfully! ${thought}`,
       ephemeral: false,
     });
     // const exampleEmbed = new EmbedBuilder()
