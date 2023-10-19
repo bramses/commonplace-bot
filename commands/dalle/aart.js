@@ -112,12 +112,26 @@ export async function execute(interaction) {
       const userInput = interaction.options.getString("input");
       const { prompt, imageUrl } = await main(userInput);
 
+      // save image to cf from imageUrl
+      const cfRes = await fetch(process.env.quoordinates_server_dalle_cf, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ url: imageUrl }),
+
+      })
+
+
+      const cfResJson = await cfRes.json();
+      const cfResUrl = cfResJson.result;
+
       // send message to channel
       const channelMsg = await interaction.channel.send(
-        `Art Prompt (**save the image it disappears in 24 hours!**): ${prompt} \n Image: [(url)](${imageUrl})`
+        `Art Prompt (**save the image it disappears in 24 hours!**): ${prompt} \n Image: [(url)](${cfResUrl})`
       );
 
-      console.log(imageUrl);
+      console.log(cfResUrl);
       await invocationWorkflowSB(interaction);
       await interaction.editReply({
         content: `<@${interaction.user.id}>, your request has been completed. Link to result: ${channelMsg.url}`,
