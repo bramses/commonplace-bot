@@ -644,6 +644,14 @@ client.on(Events.InteractionCreate, async (interaction) => {
           }
           const { prompt, imageUrl } = await main(interaction.message.content);
 
+          if (prompt === "Error generating prompt.") {
+            await interaction.editReply({
+              content: "Something went wrong. Please try again.",
+              ephemeral: true,
+            });
+            return;
+          }
+
           // save image to cf from imageUrl
           const cfRes = await fetch(process.env.quoordinates_server_dalle_cf, {
             method: "POST",
