@@ -94,3 +94,8 @@ Just return the art prompt, say nothing else.
 ## Conclusion
 
 I've really only scratched the surface of the capabities of Commonplace Bot. If you read this far, it would behoove you to join the Discord and try it out yourself! Try typing `/wander`, choose a starting point, and then `/delve` into it. You can also `/draw` and `/tldr` quotes. Finally if you like a quote, you can `/share` it with the world.
+
+## TODO
+
+- Birds of a Feather integration to fetch new interesting ideas
+- Storytelling YT channel
