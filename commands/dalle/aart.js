@@ -54,7 +54,7 @@ export async function main(prompt) {
       };
     }
 
-    const image = await openai.images.generate({ prompt: prompt });
+    const image = await openai.images.generate({ model: "dall-e-3", prompt: prompt });
     const imageUrl = image.data[0].url;
 
     if (imageUrl === undefined) {
