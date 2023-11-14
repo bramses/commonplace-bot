@@ -22,13 +22,86 @@ const filter = new Filter();
 async function complete(text) {
   try {
     text = filter.clean(text);
+
+    const artMovements = [
+      "Abstract Expressionism",
+      "Art Deco",
+      "Art Nouveau",
+      "Avant-garde",
+      "Baroque",
+      "Bauhaus",
+      "Classicism",
+      "CoBrA",
+      "Color Field Painting",
+      "Conceptual Art",
+      "Constructivism",
+      "Cubism",
+      "Dada / Dadaism",
+      "Digital Art",
+      "Expressionism",
+      "Fauvism",
+      "Futurism",
+      "Harlem Renaissance",
+      "Impressionism",
+      "Installation Art",
+      "Land Art",
+      "Minimalism",
+      "Neo-Impressionism",
+      "Neoclassicism",
+      "Neon Art",
+      "Op Art",
+      "Performance Art",
+      "Pop Art",
+      "Post-Impressionism",
+      "Precisionism",
+      "Rococo",
+      "Street Art",
+      "Surrealism",
+      "Suprematism",
+      "Symbolism",
+      "Zero Group"
+  ];
+
+  const randomArtMovement = artMovements[Math.floor(Math.random() * artMovements.length)];
+
+  const palettes = [
+    "#C7CEEA, #D6EADF, #E4C1F9, #B5EAD7, #E1CE7A",
+"#D8A7B1, #FFDAC1, #FFD1DC, #F4E8C1, #A4B0BE",
+"#A4B0BE, #FBC4AB, #E4C1F9, #FEF5EF, #6A4C93",
+"#D8A7B1, #C7CEEA, #FFC1CC, #6A4C93, #C4FCEF",
+"#D6EADF, #FFADCD, #C7CEEA, #FFDAC1, #8CC0DE",
+"#FFD1DC, #C4FCEF, #E1CE7A, #F4E8C1, #FBC4AB",
+"#FFADCD, #E1CE7A, #FFD1DC, #FFB4A2, #B5EAD7",
+"#E4C1F9, #FFC1CC, #B5E2FA, #FEF5EF, #BEE5BF",
+"#C7CEEA, #FBC4AB, #C7CEEA, #A3D8F4, #8CC0DE",
+"#D6EADF, #FFDAC1, #FFADCD, #FFB7B2, #B5EAD7",
+"#FEF5EF, #F7D08A, #B5EAD7, #C7CEEA, #FFADCD",
+"#FFB7B2, #B5EAD7, #778DA9, #F0A1BF, #C7CEEA",
+"#E1CE7A, #E4C1F9, #B5EAD7, #FFC1CC, #FFD1DC",
+"#6A4C93, #C4FCEF, #FBC4AB, #E1CE7A, #FF9AA2",
+"#FBC4AB, #F0A1BF, #FFD1DC, #FFDAC1, #FFDAC1",
+"#BEE5BF, #A4B0BE, #FBC4AB, #B5EAD7, #B5E2FA",
+"#FEF5EF, #FFDAC1, #A3D8F4, #C7CEEA, #C1E1C1",
+"#E1CE7A, #F7D08A, #C4FCEF, #FFC1CC, #D8A7B1",
+"#F7D08A, #FFB4A2, #B5EAD7, #E4C1F9, #FEF5EF",
+"#6A4C93, #C7CEEA, #D6EADF, #FEF5EF, #FFC1CC",
+"#FFC1CC, #C7CEEA, #BEE5BF, #A3D8F4, #F7D08A",
+"#F0A1BF, #B5EAD7, #FBC4AB, #E1CE7A, #F7D08A",
+"#B5EAD7, #F7D08A, #F4E8C1, #FFADCD, #8CC0DE",
+"#B5E2FA, #C7CEEA, #FFADCD, #A4B0BE, #FFDAC1",
+"#FFD1DC, #FFB4A2, #FFADCD, #C7CEEA, #C1E1C1"
+
+  ]
+
+  const randomPalette = palettes[Math.floor(Math.random() * palettes.length)];
+
   
     const completion = await openai.chat.completions.create({
       messages: [
         {
           role: "system",
           content:
-            "Summarize the following into a theme and create an art prompt from the feel of the text aesthetically along the lines of: 'an abstract of [some unique lesser known art style from history] version of {x}' where x is the feel of the text aesthetically. Remove any unsafe or NSFW content. Just return the art prompt, say nothing else." +
+            `Summarize the following into a theme and create an art prompt from the feel of the text aesthetically along the lines of: 'an abstract of ${randomArtMovement} version of {x}' where x is the feel of the text aesthetically. Remove any unsafe or NSFW content. Just return the art prompt, say nothing else. Use color palette: ${randomPalette}` +
             text,
         },
       ],
