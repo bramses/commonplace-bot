@@ -20,6 +20,10 @@ export const data = helpCommand;
 
 export async function execute(interaction) {
   await interaction.reply(`**Commonplace Bot** is a bot that serves this Discord as a librarian, gallery curator, artist, games master and more!
+
+## Video
+
+https://www.youtube.com/watch?v=7TgqMRz2r3M
   
 ## Slash Commands
 
