@@ -659,9 +659,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
               "Content-Type": "application/json",
             },
             body: JSON.stringify({ url: imageUrl }),
-
-          })
-
+          });
 
           const cfResJson = await cfRes.json();
           const cfResUrl = cfResJson.result;
@@ -1384,6 +1382,20 @@ client.on(Events.InteractionCreate, async (interaction) => {
       });
 
       processQueue();
+    } else if (interaction.customId.includes("whosaidit")) {
+      // if id ends with _t, tell the user they are correct, else tell them they are wrong.
+      const id = interaction.customId.split("_")[1];
+      if (id.endsWith("true")) {
+        await interaction.reply({
+          content: "Correct!",
+          ephemeral: true,
+        });
+      } else {
+        await interaction.reply({
+          content: "Incorrect!",
+          ephemeral: true,
+        });
+      }
     }
 
     return;
@@ -1447,8 +1459,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
     const thought = interaction.fields.getTextInputValue("thoughtInput");
     await interaction.reply({
-      content:
-        `<@${interaction.user.id}>, your \`thought\` submission was received successfully! ${thought}`,
+      content: `<@${interaction.user.id}>, your \`thought\` submission was received successfully! ${thought}`,
       ephemeral: false,
     });
     // const exampleEmbed = new EmbedBuilder()
