@@ -164,7 +164,7 @@ export async function execute(interaction) {
 
         const pseudocode = new ButtonBuilder()
           .setCustomId("pseudocode")
-          .setLabel("pseudocode")
+          .setLabel("context")
           .setStyle(ButtonStyle.Primary);
 
         const thoughtsBtn = new ButtonBuilder()

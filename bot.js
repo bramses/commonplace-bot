@@ -1160,7 +1160,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
           const pseudocode = new ButtonBuilder()
             .setCustomId("pseudocode")
-            .setLabel("pseudocode")
+            .setLabel("context")
             .setStyle(ButtonStyle.Primary);
 
           let transformRow = null;
