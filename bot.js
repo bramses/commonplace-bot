@@ -307,39 +307,65 @@ client.on(Events.InteractionCreate, async (interaction) => {
             return;
           }
 
-          const pseudocodeRes = await complete(
+          /*
+          await complete(
             `You are a surrealist creative technologist who has a graduate degree in Computer Science and mathematics. You are paid very well to think outside the box and come up with never before thought of surreal app ideas, your ideas are always hits on the app store because there are no similar offerings. You don't come up with boring ideas that are straightforward, you deeply think about your quote and provide your clients the best option. You have access to the GPT-4 API, ReactJS, Go Lang for CLI apps, Swift for iOS apps, p5.js and three.js for web canvas, and any HTTP calls. You usually recommend short scripts that are runnable standalone. If you'd like to use any libraries or SaaS tools, merely add a comment as to what they are and why. Use this quote and convert it to an app idea and psuedocode. Total should be less than 1000 chars. If you use \`\`\` for the pseudocode make sure to include the programming language e.g. \`\`\`swift or \`\`\`js or \`\`\`go for example. Choose whatever language is best.\n\nQuote:\n${interaction.message.content
               .replace(/\(\*\*affiliate link\*\*\)/g, "")
               .replace(/\[(.*?)\]\((.*?)\)/g, "$1")
               .trim()}`
           );
+          */
 
-          // split the pseudocodeRes into the description and code block (specified by ```)
-          const pseudocodeResSplit = pseudocodeRes.split("```");
-          const pseudocodeResDescription = pseudocodeResSplit[0];
-          const pseudocodeResCodeBlock = pseudocodeResSplit[1];
+          const pseudocodeRes = await complete(
+            `I only have the following quote, recreate outside context using concepts from the world. Do a breadth first search of external data. This means that you are **not rephrasing the content in the quote**. You are pulling in examples and information from the world **outside the set** of the quote. Do not bother repeating or rehashing the quote.\n\nQuote:\n${interaction.message.content
+              .replace(/\(\*\*affiliate link\*\*\)/g, "")
+              .replace(/\[(.*?)\]\((.*?)\)/g, "$1")
+              .trim()}`
+          );
 
-          // fence the code block with ``` and the language if not already
-          const pseudocodeResCodeBlockFenced =
-            pseudocodeResCodeBlock.startsWith("```") &&
-            pseudocodeResCodeBlock.endsWith("```")
-              ? pseudocodeResCodeBlock
-              : `\`\`\`${pseudocodeResCodeBlock.trim()}\`\`\``;
+          // // split the pseudocodeRes into the description and code block (specified by ```)
+          // const pseudocodeResSplit = pseudocodeRes.split("```");
+          // const pseudocodeResDescription = pseudocodeResSplit[0];
+          // const pseudocodeResCodeBlock = pseudocodeResSplit[1];
 
-          // if either is greater than 2000 chars, return gracefully
-          if (
-            pseudocodeResDescription.length > 2000 ||
-            pseudocodeResCodeBlockFenced.length > 2000
-          ) {
-            await interaction.editReply({
-              content: `<@${user}>, your \`/pseudocode\` request has been processed! However, the result was too long to post in a single message. Please try again.`,
-              ephemeral: true,
-            });
-            return;
+          // // fence the code block with ``` and the language if not already
+          // const pseudocodeResCodeBlockFenced =
+          //   pseudocodeResCodeBlock.startsWith("```") &&
+          //   pseudocodeResCodeBlock.endsWith("```")
+          //     ? pseudocodeResCodeBlock
+          //     : `\`\`\`${pseudocodeResCodeBlock.trim()}\`\`\``;
+
+          // // if either is greater than 2000 chars, return gracefully
+          // if (
+          //   pseudocodeResDescription.length > 2000 ||
+          //   pseudocodeResCodeBlockFenced.length > 2000
+          // ) {
+          //   await interaction.editReply({
+          //     content: `<@${user}>, your \`/pseudocode\` request has been processed! However, the result was too long to post in a single message. Please try again.`,
+          //     ephemeral: true,
+          //   });
+          //   return;
+          // }
+
+          // const res = await interaction.followUp(pseudocodeResDescription);
+          // await interaction.followUp(pseudocodeResCodeBlockFenced);
+          const split2000 = [];
+          let i = 0;
+          while (i < pseudocodeRes.length) {
+            split2000.push(pseudocodeRes.substring(i, i + 2000));
+            i += 2000;
           }
 
-          const res = await interaction.followUp(pseudocodeResDescription);
-          await interaction.followUp(pseudocodeResCodeBlockFenced);
+          const res = await interaction.followUp(split2000[0]);
+          for (const part of split2000) {
+            // skip the first part
+            if (part === split2000[0]) {
+              continue;
+            }
+            await interaction.followUp(part);
+          }
+
+          // await interaction.followUp(pseudocodeRes);
           interaction.commandName = "pseudocode";
           await invocationWorkflowSB(interaction, true);
 
