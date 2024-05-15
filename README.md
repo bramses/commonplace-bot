@@ -4,7 +4,7 @@
 
 [**CHECK OUT THE SISTER LIBRARY, QUOORDINATES!**](https://github.com/bramses/quoordinates)
 
-[**Or check out the general purpose prototype editor I'm working on using Quill JS!**](https://github.com/bramses/commonbase-editor-prototype-quill/tree/main)
+[**Or check out the general purpose prototype editor I'm working on using Quill JS!**](https://github.com/bramses/commonbase-editor-prototype-quill)
 
 
 Commonplace Bot is a modern representation of the commonplace book. By using a combination of the newest computation technologies and creative design techniques, Commonplace Bot is the first of its kind to show what the commonplace book of the future may look like.
